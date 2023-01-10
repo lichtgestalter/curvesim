@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#branch weggeworfen!
 # SSLS - Star System Lightcurve Simulator
 # The SSLS calculates the movements and eclipses of celestial bodies and produces a video of this.<br>
 # Specify mass, radius and other properties of some stars and planets in a configuration file. Then run "ssls.py <Configfilename>" to produce the video.<br>
@@ -541,7 +540,6 @@ def render_animation(bodies, red_dot):
     print(f' {toc - tic:7.2f} seconds  ({P.frames / (toc - tic):.0f} frames/second)')
     print(f'{P.video_file} saved.')
     return bodies, red_dot
-
 
 
 if __name__ == '__main__':
