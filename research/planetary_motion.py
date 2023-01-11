@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-# Original file is located at https://colab.research.google.com/drive/1YKjSs8_giaZVrUKDhWLnUAfebuLTC-A5
+# This file is no longer used in the project.
+# It contains the first steps towards calculating the physics and animating the resulting planetary motion.
+# It is based on https://colab.research.google.com/drive/1YKjSs8_giaZVrUKDhWLnUAfebuLTC-A5
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt

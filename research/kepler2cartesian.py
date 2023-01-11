@@ -1,5 +1,5 @@
-import numpy as np
-import math
+# -*- coding: utf-8 -*-
+# This file is not used in the project but parts of its code are used in ssls.py
 
 # This python script is based on these very helpful sources:
 # [a]: https://web.archive.org/web/20160418175843/https://ccar.colorado.edu/asen5070/handouts/cart2kep2002.pdf
@@ -17,6 +17,10 @@ import math
 # Now you can provide the true anomaly or the eccentric anomaly or the mean anomaly
 # or the time of periapsis to the function keplerian_elements_to_state_vectors().
 # The code now helps to understand the relationship between these 4 terms.
+
+import numpy as np
+import math
+
 
 def state_vectors_to_keplerian_elements(mu, position, velocity):
     h_bar = np.cross(position, velocity)  # 1a: Specific angular momentum.
