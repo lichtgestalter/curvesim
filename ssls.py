@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
-# SSLS - Star System Lightcurve Simulator
-# The SSLS calculates the movements and eclipses of celestial bodies and produces a video of this.<br>
-# Specify mass, radius and other properties of some stars and planets in a configuration file. Then run "ssls.py <Configfilename>" to produce the video.<br>
-# The video shows simultanously a view of the star system from top and from the side and the lightcurve of the system's total luminosity over time.<br>
-# Usually you do not need to look at or even modify the python code. Instead control the program's outcome with the config file. The meaning of all program parameters is documented in the config file.<br>
-# SSLS uses ffmpeg to convert the data into a video. Download ffmpeg from https://www.ffmpeg.org/download.html. Extract the zip file and add "<yourdriveandpath>\FFmpeg\bin" to Environment Variable PATH.<br>
-# <br>
-# Your questions and comments are welcome.<br>
-# Just open an issue on https://github.com/lichtgestalter/ssls/issues to get my attention :)<br>
+"""
+SSLS - Star System Lightcurve Simulator
+The SSLS calculates the movements and eclipses of celestial bodies and produces a video of this.<br>
+Specify mass, radius and other properties of some stars and planets in a configuration file. Then run "ssls.py <Configfilename>" to produce the video.<br>
+The video shows simultanously a view of the star system from the top and from the side and the lightcurve of the system's total luminosity over time.<br>
+Usually you do not need to look at or even modify the python code. Instead control the program's outcome with the config file. The meaning of all program parameters is documented in the config file.<br>
+SSLS uses ffmpeg to convert the data into a video. Download ffmpeg from https://www.ffmpeg.org/download.html. Extract the zip file and add "<yourdriveandpath>\FFmpeg\bin" to Environment Variable PATH.<br>
+<br>
+Your questions and comments are welcome.<br>
+Just open an issue on https://github.com/lichtgestalter/ssls/issues to get my attention :)<br>
+"""
 
 import configparser
 import math
@@ -17,7 +19,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import time
-
 
 # sys.argv[1]="ssls.ini"  # If you run this script in a jupyter notebook, uncomment this line in order to provide the name of your config file.
 
@@ -191,7 +192,7 @@ class Body:
         if self.velocity is None:  # State vectors are not in config file. So they will be calculated from Kepler orbit parameters instead.
             pos, vel, *_ = self.keplerian_elements_to_state_vectors()
             self.positions[0] = np.array(pos, dtype=float)  # [m] initial position
-            self.velocity = np.array(vel, dtype=float)  # [m/s]
+            self.velocity = np.array(vel, dtype=float)  # [m/s] initial velocity
 
     def eclipsed_by(self, body, iteration):
         """Returns area, relative_radius
@@ -234,7 +235,7 @@ class Body:
 
 def find_and_check_config_file(default):
     """Check program parameters and extract config file name from them.
-    Check if config file can be opened anf contains all standard sections."""
+    Check if config file can be opened and contains all standard sections."""
     # Check program parameters and extract config file name from them.
     if len(sys.argv) == 1:
         configfilename = default
@@ -306,6 +307,7 @@ def init_bodies(configfilename, standard_sections):
 
 
 def body_from_name(bodies, bodyname):
+    """Returns the body from the list bodies, which has the name bodyname."""
     if bodyname is None:
         return None
     else:
@@ -343,6 +345,8 @@ def keplers_equation_root(e, ma, ea_guess=0.0, tolerance=1e-10, max_steps=50):
 
 
 def gravitational_parameter(body1, body2):
+    """Calculate the gravitational parameter of two masses
+    https://en.wikipedia.org/wiki/Standard_gravitational_parameter"""
     if body1 is None or body2 is None:
         return None
     else:
@@ -361,15 +365,15 @@ def limbdarkening(relative_radius, beta):
     https://de.wikipedia.org/wiki/Photosph%C3%A4re#Mitte-Rand-Verdunkelung
     Approximates the flux of a star at a point on the star seen from a very large distance.
     The point's apparent distance from the star's center is relative_radius * radius.
-    Beta depends on the wavelength. 2.3 is a good compromise for the spectrum of visible light."""
+    Beta depends on the wavelength. Beta=2.3 is a good compromise for the spectrum of visible light."""
     if relative_radius >= 1:
         return 1 / (1 + beta)
     return (1 + beta * math.sqrt(1 - relative_radius ** 2)) / (1 + beta)
 
 
 def total_luminosity(bodies, stars, iteration):
-    """"Add luminosity of all stars in the system while checking for eclipses
-    does not yet work correctly for eclipsed eclipses (three or more bodies in line of sight at the same time)."""
+    """"Add luminosity of all stars in the system while checking for eclipses.
+    Does not yet work correctly for eclipsed eclipses (three or more bodies in line of sight at the same time)."""
     luminosity = 0.0
     for star in stars:
         luminosity += star.luminosity
