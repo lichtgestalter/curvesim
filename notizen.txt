@@ -23,7 +23,6 @@ Questions for next zoom call:
     Is there a community of astronomers specialized in exoplanets that would be welcoming to a dabbling layman like me?
 
 next:
-    lernen, git vernünftig zu benutzen (als Datensicherung nach jeder nennenswerten Änderung)
     state_vectors() den delay t (Zeit seit Transit?) vernünftig mitgeben?
     time of transit als absolute Julianzeit mitgeben?
     Was ist mit zu berechnenden state_vectors von Körpern, die nicht eclipsen? Also auch Omega und nu nicht 270° haben?
@@ -48,15 +47,9 @@ später:
         Track transit variations (changes in orbiting period). Do they suggest hidden planets? Can I guess the hidden planets parameters? Very probably not.
         !!! How does an exomoon influence transit variation? Fun :)
 
-    Model sun spots:
-        Keine Gravitation, aber Positionsupdate. Position leitet sich ab aus:
-        Position+Radius der Sonne, Rotationsgeschwindigkeit, Rotationsachse der Sonne; Längengrad, Breitengrad des Sonnenflecks.
-        north_pole = longitude, latitude
-        spots = [(period, start_longitude, start_latitude, brightness_factor)]
-
     Model variable stars:
         Parameter für regelmäßige Helligkeitsänderungen: variation = [(amplitude, periode, phase(shift?))]
-        Helligkeit des Sterns abhängig von RV varieren?
+        Das deckt auch Sunspots ab. Die wären sonst zu beschwerlich.
 
     Multiple Eclipses (e.g. Triply Eclipsing Triples, >=3 bodies in line of sight):
         Handle them correctly
