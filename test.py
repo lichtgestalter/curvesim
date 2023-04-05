@@ -1,7 +1,2 @@
-import matplotlib
-import matplotlib.animation
-import matplotlib.pyplot as plt
-
-x = dir(matplotlib.animation)
-for _ in x:
-    print(_)
+print(f'Using default config file {888+2}. Specify config file name as '
+      f'program parameter if you want to use another config file.')

@@ -23,14 +23,16 @@ import sys
 import time
 
 
-# sys.argv[1]="ssls.ini"  # If you run this script in a jupyter notebook, uncomment this line in order to provide the name of your config file.
+# If you run this script in a jupyter notebook, uncomment this line in order to provide the name of your config file.
+# sys.argv[1]="ssls.ini"
 
 
 class Parameters:
     def __init__(self, config, standard_sections):
         """Read program parameters and properties of the physical bodies from config file."""
         # [Astronomical Constants]
-        g = eval(config.get("Astronomical Constants", "g"))  # For ease of use of these constants in the config file they are additionally defined here without the prefix "self.".
+        # For ease of use of these constants in the config file they are additionally defined here without the prefix "self.".
+        g = eval(config.get("Astronomical Constants", "g"))
         au = eval(config.get("Astronomical Constants", "au"))
         r_sun = eval(config.get("Astronomical Constants", "r_sun"))
         m_sun = eval(config.get("Astronomical Constants", "m_sun"))
@@ -40,7 +42,8 @@ class Parameters:
         r_earth = eval(config.get("Astronomical Constants", "r_earth"))
         m_earth = eval(config.get("Astronomical Constants", "m_earth"))
         v_earth = eval(config.get("Astronomical Constants", "v_earth"))
-        self.g, self.au, self.r_sun, self.m_sun, self.l_sun, self.r_jup, self.m_jup, self.r_earth, self.m_earth, self.v_earth = g, au, r_sun, m_sun, l_sun, r_jup, m_jup, r_earth, m_earth, v_earth
+        self.g, self.au, self.r_sun, self.m_sun, self.l_sun = g, au, r_sun, m_sun, l_sun,
+        self.r_jup, self.m_jup, self.r_earth, self.m_earth, self.v_earth = r_jup, m_jup, r_earth, m_earth, v_earth
 
         # [Video]
         self.video_file = config.get("Video", "video_file")
@@ -57,13 +60,17 @@ class Parameters:
         self.scope_top = eval(config.get("Scale", "scope_top"))
         self.star_scale_top = eval(config.get("Scale", "star_scale_top"))
         self.planet_scale_top = eval(config.get("Scale", "planet_scale_top"))
+        self.autoscaling = config.get("Scale", "autoscaling") == "on"
+        self.min_diameter = eval(config.get("Scale", "min_diameter"))
+        self.max_diameter = eval(config.get("Scale", "max_diameter"))
 
         # [Plot]
         self.figure_width = eval(config.get("Plot", "figure_width"))
         self.figure_height = eval(config.get("Plot", "figure_height"))
         self.xlim = eval(config.get("Plot", "xlim"))
         self.ylim = eval(config.get("Plot", "ylim"))
-        self.time_units = {"s": 1, "min": 60, "h": 3600, "d": 24 * 3600, "mon": 365.25 * 24 * 3600 / 12, "y": 365.25 * 24 * 3600}
+        self.time_units = {"s": 1, "min": 60, "h": 3600, "d": 24 * 3600,
+                           "mon": 365.25 * 24 * 3600 / 12, "y": 365.25 * 24 * 3600}
         self.x_unit_name = config.get("Plot", "x_unit")
         self.x_unit_value = self.time_units[self.x_unit_name]
         self.red_dot_height = eval(config.get("Plot", "red_dot_height"))
@@ -71,16 +78,20 @@ class Parameters:
 
         # Checking all parameters defined so far
         for key in vars(self):
-            if type(getattr(self, key)) not in [str, dict]:
+            if type(getattr(self, key)) not in [str, dict, bool]:
                 if getattr(self, key) <= 0:
+                    print(f'{self=}   {key=}   {getattr(self, key)=}    {type(getattr(self, key))=}')
                     raise Exception(f"No parameter in sections {standard_sections} may be zero or negative.")
 
 
 # noinspection NonAsciiCharacters,PyPep8Naming,PyUnusedLocal
 class Body:
-    def __init__(self, name, body_type, mass, radius, luminosity, startposition, velocity, a, e, i, Ω, ω, ϖ, L, ma, ea, nu, T, t, main_gravity_body, beta, color):
+    def __init__(self, name, body_type, mass, radius, luminosity, startposition, velocity, a, e, i, Ω, ω, ϖ, L, ma, ea,
+                 nu, T, t, main_gravity_body, beta, color):
         """Initialize instance of physical body."""
-        g, au, r_sun, m_sun, l_sun, r_jup, m_jup, r_earth, m_earth, v_earth = P.g, P.au, P.r_sun, P.m_sun, P.l_sun, P.r_jup, P.m_jup, P.r_earth, P.m_earth, P.v_earth  # For ease of use of these constants in the config file they are additionally defined here without the prefix "p.".
+        # For ease of use of constants in the config file they are additionally defined here without the prefix "p.".
+        g, au, r_sun, m_sun, l_sun = P.g, P.au, P.r_sun, P.m_sun, P.l_sun
+        r_jup, m_jup, r_earth, m_earth, v_earth = P.r_jup, P.m_jup, P.r_earth, P.m_earth, P.v_earth
         self.name = name  # name
         self.body_type = body_type  # "star"/"planet"/"barycenter"
         self.mass = mass  # [kg]
@@ -91,8 +102,6 @@ class Body:
         self.positions = np.zeros((P.iterations, 3), dtype=float)  # position for each frame
         self.main_gravity_body = main_gravity_body  # Used for calculating mu
         self.color = color  # (R, G, B)  each between 0 and 1
-
-        extrascale_ecl, extrascale_top = 0, 0  # Making sure these variables are defined for barycenters also.
 
         if body_type == "planet":
             self.a = a  # [m] semi-major axis
@@ -109,11 +118,9 @@ class Body:
             self.t = t  # [s] time since last time of transit
             self.ma, self.ea, self.T = None, None, None  # [rad] Only true anomaly or mean_anomaly or eccentric_anomaly or time_of_periapsis has to be provided.
             self.mu = None  # Gravitational Parameter. Depends on the masses of at least 2 bodies.
-            extrascale_ecl, extrascale_top = P.planet_scale_ecl, P.planet_scale_top  # Scale radius in plot.
             self.beta = None  # unnecessary line of code?
 
         if body_type == "star":
-            extrascale_ecl, extrascale_top = P.star_scale_ecl, P.star_scale_top  # It's a star. Scale radius in plot accordingly.
             self.beta = beta  # [1] limb darkening
 
         if startposition is not None and velocity is not None:  # State vectors are already in config file.
@@ -128,10 +135,32 @@ class Body:
         else:  # State vectors are not in config file. They will be calculated from Kepler orbit parameters later on after all bodies are initialized.
             self.velocity = None
 
-        self.circle_top = matplotlib.patches.Circle((0, 0), radius * extrascale_top / P.scope_top)  # Matplotlib patch for top view
-        self.circle_ecl = matplotlib.patches.Circle((0, 0), radius * extrascale_ecl / P.scope_ecl)  # Matplotlib patch for eclipsed view
+        # Used for calculation of eclipsed area in function eclipsed_by.
+        self.d, self.h, self.angle, self.eclipsed_area = 0.0, 0.0, 0.0, 0.0
 
-        self.d, self.h, self.angle, self.eclipsed_area = 0.0, 0.0, 0.0, 0.0  # Used for calculation of eclipsed area in function eclipsed_by.
+    @staticmethod
+    def generate_patches(bodies):
+        if P.autoscaling:
+            print("autoscaling on")
+            smallest_radius, largest_radius = 1.0e30, 0.0
+            for body in bodies:
+                if body.radius > largest_radius:
+                    largest_radius = body.radius
+                if body.radius < smallest_radius:
+                    smallest_radius = body.radius
+                body.circle_top = matplotlib.patches.Circle(xy=(0, 0), radius=P.min_diameter)  # Matplotlib patch for top view
+                body.circle_ecl = matplotlib.patches.Circle(xy=(0, 0), radius=P.max_diameter)  # Matplotlib patch for eclipsed view
+            print(f'{smallest_radius=}   {largest_radius=}')
+        else:
+            print("autoscaling off")
+            for body in bodies:
+                extrascale_ecl, extrascale_top = 0, 0  # Making sure these variables are defined for barycenters also.
+                if body.body_type == "planet":
+                    extrascale_ecl, extrascale_top = P.planet_scale_ecl, P.planet_scale_top  # Scale radius in plot.
+                if body.body_type == "star":
+                    extrascale_ecl, extrascale_top = P.star_scale_ecl, P.star_scale_top  # It's a star. Scale radius in plot accordingly.
+                body.circle_top = matplotlib.patches.Circle((0, 0), radius=body.radius * extrascale_top / P.scope_top)  # Matplotlib patch for top view
+                body.circle_ecl = matplotlib.patches.Circle((0, 0), radius=body.radius * extrascale_ecl / P.scope_ecl)  # Matplotlib patch for eclipsed view
 
     def keplerian_elements_to_state_vectors(self):
         """Calculates the state vectors (position and velocity) from Keplerian Orbit Elements.
@@ -142,8 +171,10 @@ class Body:
         [d]: https://space.stackexchange.com/questions/55356/how-to-find-eccentric-anomaly-by-mean-anomaly
         [e]: https://github.com/alfonsogonzalez/AWP/blob/main/src/python_tools/numerical_tools.py
         Numbers in comments refer to numbered formulas in [a] and [b].
-        Code based on [c]. Added calculation of eccentric anomaly based on the explanations in [d] using a stripped down version of [e]."""
-        a, e, i, Ω, ω, ϖ, L, ma, ea, nu, T, t, mu = self.a, self.e, self.i, self.Ω, self.ω, self.ϖ, self.L, self.ma, self.ea, self.nu, self.T, self.t, self.mu  # for readability of the following formulas
+        Code based on [c]. Added calculation of eccentric anomaly based on the explanations
+        in [d] using a stripped down version of [e]."""
+        a, e, i, Ω, ω, ϖ, L = self.a, self.e, self.i, self.Ω, self.ω, self.ϖ, self.L  # for readability of formulas
+        ma, ea, nu, T, t, mu = self.ma, self.ea, self.nu, self.T, self.t, self.mu  # for readability of formulas
 
         if ω is None and ϖ is not None and Ω is not None:
             ω = ϖ - Ω
@@ -244,7 +275,8 @@ def find_and_check_config_file(default):
     # Check program parameters and extract config file name from them.
     if len(sys.argv) == 1:
         configfilename = default
-        print(f'Using default config file {configfilename}. Specify config file name as program parameter if you want to use another config file.')
+        print(f'Using default config file {configfilename}. Specify config file name as program parameter if you '
+              f'want to use another config file.')
     elif len(sys.argv) == 2:
         configfilename = sys.argv[1]
         print(f'Using {configfilename} as config file.')
@@ -253,7 +285,8 @@ def find_and_check_config_file(default):
         print(f'Using {configfilename} as config file. Further program parameters are ignored.')
     config = configparser.ConfigParser(inline_comment_prefixes='#')  # Read config file.
     if len(config.read(configfilename)) < 1:  # Can the config file be opened?
-        raise Exception("""config file not found. Check program parameter. If you run this script in a jupyter notebook, add sys.argv[1]='ssls.ini' to the script. """)
+        raise Exception("""config file not found. Check program parameter. If you run this script in a jupyter 
+        notebook, add sys.argv[1]='ssls.ini' to the script. """)
     for section in Standard_sections:  # Does the config file contain all standard sections?
         if section not in config.sections():
             raise Exception(f'Section {section} missing in config file.')
@@ -263,10 +296,12 @@ def find_and_check_config_file(default):
 # noinspection PyUnusedLocal
 def init_bodies(configfilename, standard_sections):
     """Read program parameters and properties of the physical bodies from config file."""
-    g, au, r_sun, m_sun, l_sun, r_jup, m_jup, r_earth, m_earth, v_earth = P.g, P.au, P.r_sun, P.m_sun, P.l_sun, P.r_jup, P.m_jup, P.r_earth, P.m_earth, P.v_earth  # For ease of use of these constants in the config file they are additionally defined here without the prefix "P.".
+    # For ease of use of these constants in the config file they are additionally defined here without the prefix "P.".
+    g, au, r_sun, m_sun, l_sun = P.g, P.au, P.r_sun, P.m_sun, P.l_sun
+    r_jup, m_jup, r_earth, m_earth, v_earth = P.r_jup, P.m_jup, P.r_earth, P.m_earth, P.v_earth
     bodies = []
     config = configparser.ConfigParser(inline_comment_prefixes='#')
-    config.read(configfilename)  # Read config file. Has already been done moments before for reading the program parameters.
+    config.read(configfilename)  # Read config file. (Has been done moments before for reading the program parameters.)
 
     # Physical bodies
     for section in config.sections():
@@ -308,6 +343,7 @@ def init_bodies(configfilename, standard_sections):
         for c in body.color:
             if c < 0 or c > 1:
                 raise Exception(f'{body.name} has invalid color value {c}.')
+    Body.generate_patches(bodies)
     return bodies
 
 
@@ -426,7 +462,8 @@ def calc_positions_eclipses_luminosity(bodies):
 
 def calc_physics(bodies):
     """Calculate body positions and the resulting lightcurve."""
-    print(f'Producing {P.frames / P.fps:.0f} seconds long video, covering {P.dt * P.iterations / 60 / 60 / 24:5.2f} earth days. ({P.dt * P.sampling_rate * P.fps / 60 / 60 / 24:.2f} earth days per video second.)')
+    print(f'Producing {P.frames / P.fps:.0f} seconds long video, covering {P.dt * P.iterations / 60 / 60 / 24:5.2f} '
+          f'earth days. ({P.dt * P.sampling_rate * P.fps / 60 / 60 / 24:.2f} earth days per video second.)')
     print(f'Calculating {P.iterations:6d} iterations: ', end="")
     tic = time.perf_counter()
     lightcurve, bodies = calc_positions_eclipses_luminosity(bodies)
@@ -437,7 +474,8 @@ def calc_physics(bodies):
 
 
 def tic_delta(scope):
-    """Returns a distance between two tics on an axis so that the total number of tics on that axis is between 5 and 10."""
+    """Returns a distance between two tics on an axis so that the total
+    number of tics on that axis is between 5 and 10."""
     if scope <= 0:  # no or constant values
         return 1
     delta = 10 ** np.floor(math.log10(scope))
@@ -535,7 +573,7 @@ def next_animation_frame(frame, bodies, red_dot):
         body.circle_ecl.set(zorder=-body.positions[frame * P.sampling_rate][1])
         body.circle_ecl.center = body.positions[frame * P.sampling_rate][0] / P.scope_ecl, body.positions[frame * P.sampling_rate][2] / P.scope_ecl
     red_dot.center = P.dt * P.sampling_rate * frame / P.x_unit_value, Lightcurve[frame * P.sampling_rate]
-    if frame > 0 and frame % int(round(P.frames / 10)) == 0:  # Inform user about program's progress.
+    if frame >= 10 and frame % int(round(P.frames / 10)) == 0:  # Inform user about program's progress.
         print(f'{round(frame / P.frames * 10) * 10:3d}% ', end="")
 
 
