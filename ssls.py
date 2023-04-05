@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
-"""
-SSLS - Star System Lightcurve Simulator
-The SSLS calculates the movements and eclipses of celestial bodies and produces a video of this.<br>
-Specify mass, radius and other properties of some stars and planets in a configuration file. Then run "ssls.py <Configfilename>" to produce the video.<br>
-The video shows simultanously a view of the star system from the top and from the side and the lightcurve of the system's total luminosity over time.<br>
-Usually you do not need to look at or even modify the python code. Instead control the program's outcome with the config file. The meaning of all program parameters is documented in the config file.<br>
-SSLS uses ffmpeg to convert the data into a video. Download ffmpeg from https://www.ffmpeg.org/download.html. Extract the zip file and add "<yourdriveandpath>\FFmpeg\bin" to Environment Variable PATH.<br>
-<br>
-Your questions and comments are welcome.<br>
-Just open an issue on https://github.com/lichtgestalter/ssls/issues to get my attention :)<br>
-"""
+# SSLS - Star System Lightcurve Simulator
+# The SSLS calculates the movements and eclipses of celestial bodies and produces a video of this.
+# Specify mass, radius and other properties of some stars and planets in a configuration file.
+# Then run "ssls.py <Configfilename>" to produce the video.
+# The video shows simultanously a view of the star system from the top and from the side and
+# the lightcurve of the system's total luminosity over time.
+# Usually you do not need to look at or even modify the python code. Instead control the program's
+# outcome with the config file. The meaning of all program parameters is documented in the config file.
+# SSLS uses ffmpeg to convert the data into a video. Download ffmpeg from https://www.ffmpeg.org/download.html.
+# Extract the zip file and add "<yourdriveandpath>\FFmpeg\bin" to Environment Variable PATH.<br>
+#
+# Your questions and comments are welcome.
+# Just open an issue on https://github.com/lichtgestalter/ssls/issues to get my attention :)
 
 import configparser
 import math
@@ -20,13 +22,13 @@ import numpy as np
 import sys
 import time
 
+
 # sys.argv[1]="ssls.ini"  # If you run this script in a jupyter notebook, uncomment this line in order to provide the name of your config file.
 
 
 class Parameters:
     def __init__(self, config, standard_sections):
         """Read program parameters and properties of the physical bodies from config file."""
-
         # [Astronomical Constants]
         g = eval(config.get("Astronomical Constants", "g"))  # For ease of use of these constants in the config file they are additionally defined here without the prefix "self.".
         au = eval(config.get("Astronomical Constants", "au"))
@@ -74,6 +76,7 @@ class Parameters:
                     raise Exception(f"No parameter in sections {standard_sections} may be zero or negative.")
 
 
+# noinspection NonAsciiCharacters,PyPep8Naming,PyUnusedLocal
 class Body:
     def __init__(self, name, body_type, mass, radius, luminosity, startposition, velocity, a, e, i, Ω, ω, ϖ, L, ma, ea, nu, T, t, main_gravity_body, beta, color):
         """Initialize instance of physical body."""
@@ -88,6 +91,8 @@ class Body:
         self.positions = np.zeros((P.iterations, 3), dtype=float)  # position for each frame
         self.main_gravity_body = main_gravity_body  # Used for calculating mu
         self.color = color  # (R, G, B)  each between 0 and 1
+
+        extrascale_ecl, extrascale_top = 0, 0  # Making sure these variables are defined for barycenters also.
 
         if body_type == "planet":
             self.a = a  # [m] semi-major axis
@@ -255,6 +260,7 @@ def find_and_check_config_file(default):
     return configfilename
 
 
+# noinspection PyUnusedLocal
 def init_bodies(configfilename, standard_sections):
     """Read program parameters and properties of the physical bodies from config file."""
     g, au, r_sun, m_sun, l_sun, r_jup, m_jup, r_earth, m_earth, v_earth = P.g, P.au, P.r_sun, P.m_sun, P.l_sun, P.r_jup, P.m_jup, P.r_earth, P.m_earth, P.v_earth  # For ease of use of these constants in the config file they are additionally defined here without the prefix "P.".
@@ -265,7 +271,6 @@ def init_bodies(configfilename, standard_sections):
     # Physical bodies
     for section in config.sections():
         if section not in standard_sections:  # This section must describe a physical object.
-            # ω, ϖ, L, ma, ea, nu, T, t
             bodies.append(Body(name=section,
                                body_type=config.get(section, "body_type"),
                                mass=eval(config.get(section, "mass")),
@@ -319,9 +324,9 @@ def body_from_name(bodies, bodyname):
 
 def keplers_equation(ea, e, ma):
     """ea: eccentric anomaly [rad], e: eccentricity, ma: mean anomaly [rad]"""
-    if not -2*math.pi < ea < 2*math.pi:
+    if not -2 * math.pi < ea < 2 * math.pi:
         raise ValueError("eccentric anomaly ea must be in radians but is outside of the range ]-2π;2π[")
-    if not -2*math.pi < ma < 2*math.pi:
+    if not -2 * math.pi < ma < 2 * math.pi:
         raise ValueError("mean anomaly ma must be in radians but is outside of the range ]-2π;2π[")
     if not 0 <= e < 1:
         raise ValueError("eccentricity e is outside of the range [0;1[")

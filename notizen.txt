@@ -23,6 +23,12 @@ Questions for next zoom call:
     Is there a community of astronomers specialized in exoplanets that would be welcoming to a dabbling layman like me?
 
 next:
+    Autoscale für Himmelskörper mit diesen Parametern:
+        Autoscale on/off
+        Pixelradius des kleinsten Sterns
+        Pixelradius des kleinsten Planeten
+        Scaling linear/logarithmic
+
     state_vectors() den delay t (Zeit seit Transit?) vernünftig mitgeben?
     time of transit als absolute Julianzeit mitgeben?
     Was ist mit zu berechnenden state_vectors von Körpern, die nicht eclipsen? Also auch Omega und nu nicht 270° haben?
