@@ -61,8 +61,8 @@ class Parameters:
         self.star_scale_top = eval(config.get("Scale", "star_scale_top"))
         self.planet_scale_top = eval(config.get("Scale", "planet_scale_top"))
         self.autoscaling = config.get("Scale", "autoscaling") == "on"
-        self.min_diameter = eval(config.get("Scale", "min_diameter"))
-        self.max_diameter = eval(config.get("Scale", "max_diameter"))
+        self.min_diameter = eval(config.get("Scale", "min_diameter")) / 100.0
+        self.max_diameter = eval(config.get("Scale", "max_diameter")) / 100.0
 
         # [Plot]
         self.figure_width = eval(config.get("Plot", "figure_width"))
@@ -139,18 +139,32 @@ class Body:
         self.d, self.h, self.angle, self.eclipsed_area = 0.0, 0.0, 0.0, 0.0
 
     @staticmethod
+    def calc_patch_diameters(bodies):
+        """todo XXXXXXXXXXXXXXXXXXXXXXXXX"""
+        radius_list = [body.radius for body in bodies]  # radii of all bodies
+        # print(f'{rlist=}')
+        log_list = [math.log10(i) for i in radius_list]  # log10 of all radii
+        # print(f'{log_list=}')
+        log_scaled_list = [i * P.min_diameter / min(log_list) for i in log_list]  # scaled log10 lineary, so the smallest circle has the desired diameter
+        # print(f'{min_ok=}')
+        exp_numerator = math.log10((P.max_diameter - max(log_scaled_list)) / max(log_scaled_list))
+        exp_denominator = math.log10(max(log_list) - min(log_list))
+        # print(x, y, exponent)
+        diameter_list = [i * (1 + (j - min(log_list)) ** (exp_numerator / exp_denominator)) for i, j in zip(log_scaled_list, log_list)]  # scaled log10 exponentially, so all circles have the desired diameter
+        # print(f'{fertig=}')
+        for body, diameter in zip(bodies, diameter_list):
+            body.patch_diameter = diameter
+        # todo: funktioniert noch nicht, falls barycenter (mit Radius = 0 oder so ähnlich) in bodies enthalten sind
+
+    @staticmethod
     def generate_patches(bodies):
+        """todo XXXXXXXXXXXXXXXXXXXXXXXXX"""
         if P.autoscaling:
             print("autoscaling on")
-            smallest_radius, largest_radius = 1.0e30, 0.0
+            Body.calc_patch_diameters(bodies)
             for body in bodies:
-                if body.radius > largest_radius:
-                    largest_radius = body.radius
-                if body.radius < smallest_radius:
-                    smallest_radius = body.radius
-                body.circle_top = matplotlib.patches.Circle(xy=(0, 0), radius=P.min_diameter)  # Matplotlib patch for top view
-                body.circle_ecl = matplotlib.patches.Circle(xy=(0, 0), radius=P.max_diameter)  # Matplotlib patch for eclipsed view
-            print(f'{smallest_radius=}   {largest_radius=}')
+                body.circle_top = matplotlib.patches.Circle(xy=(0, 0), radius=body.patch_diameter)  # Matplotlib patch for top view
+                body.circle_ecl = matplotlib.patches.Circle(xy=(0, 0), radius=body.patch_diameter)  # Matplotlib patch for eclipsed view
         else:
             print("autoscaling off")
             for body in bodies:
