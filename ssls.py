@@ -140,7 +140,7 @@ class Body:
 
     @staticmethod
     def calc_patch_diameters(bodies):
-        """todo XXXXXXXXXXXXXXXXXXXXXXXXX"""
+        """todo XXXXXXXXXXXXXXXXXXXXXXXXXX"""
         radius_list = [body.radius for body in bodies]  # radii of all bodies
         # print(f'{rlist=}')
         log_list = [math.log10(i) for i in radius_list]  # log10 of all radii
