@@ -11,6 +11,7 @@ Questions for next zoom call:
     I implemented a very feasible approximation formula for limb darkening but I found it only on a German wikipedia page and nowhere else.
         https://de.wikipedia.org/wiki/Photosph%C3%A4re#Mitte-Rand-Verdunkelung
         Have you seen this formula and know where it comes from?
+        Should I rather use the better known version (with 2 parameters)?
     How to model sun spots?
         Nora said (in episode 37, at 12:00): Spots move away from the center. Why?
         Nora said (in episode 37, at 14:00): Peaks in frequency spectrum are integer multiples of peak with highest power. (harmonics) Why?
@@ -23,35 +24,39 @@ Questions for next zoom call:
     Is there a community of astronomers specialized in exoplanets that would be welcoming to a dabbling layman like me?
 
 next:
-    Autoscale für Himmelskörper mit diesen Parametern:
-        Autoscale on/off
-        Pixelradius des kleinsten Sterns
-        Pixelradius des kleinsten Planeten
-        Scaling linear/logarithmic
-
-    state_vectors() den delay t (Zeit seit Transit?) vernünftig mitgeben?
-    time of transit als absolute Julianzeit mitgeben?
-    Was ist mit zu berechnenden state_vectors von Körpern, die nicht eclipsen? Also auch Omega und nu nicht 270° haben?
+    Google:
+        pycharm move function into class
+        pycharm convert function into class method
+    Is radii the plural of radius?
+    Ein paar Funktionen in Klasse Body verschieben
 
 später:
-    Limb darkening auf die anscheinend übliche Darstellung mit einem linearen Parameter und einem quadratischen Parameter umstellen. (Achtung, es gibt 2 Definitionen!)
+    Limb darkening auf die anscheinend übliche Darstellung mit einem linearen Parameter und einem quadratischen Parameter umstellen.
+    (Achtung, es gibt 2 Definitionen!)
 
-    Bahnbeschreibung:
+    Orbit parameter input:
         Exoplaneten-Paper und -Datenbanken studieren: Welche Bahnparameter werden angegeben? Welche muss ich berechnen? Welche einfach festlegen?
+
         Für welchen Zeitpunkt ermittle ich eigentlich gerade die state vectors? t=0 offenbar. Wo ist das in der Bahn? Periapsis?
         Parameter t doch wieder einbauen, um state vectors für bestimmten Zeitpunkt zu ermitteln?
-        keplerian_elements_to_state_vectors() soll berechnete Parameter in ein (neues) config file schreiben.
+        state_vectors() den delay t (Zeit seit Transit?) vernünftig mitgeben?
+        time of transit als absolute Julianzeit mitgeben?
+
         x-axis of lightcurve in BJD (BJD https://en.wikipedia.org/wiki/Barycentric_Julian_Date and https://en.wikipedia.org/wiki/Barycentric_Dynamical_Time)
+
+    Orbit parameter output:
+        keplerian_elements_to_state_vectors() soll berechnete Parameter in ein (neues) config file schreiben.
+
         Nach Berechnung aller Positionen die Bahndaten auswerten:
-            Transits: T1, T2, T3, T4, T14, Tt
+            Transit times: T1, T2, T3, T4, T14, Tt
             Kepler-Orbit-Parameter
             max/min of x, y, z position
+            Datenhaltung? [stars] x [bodies] x [aktueller Zustand, [(Ereignis, timestamp)]
+            Track transit variations (changes in orbiting period).
+                Do they suggest hidden planets? Can I guess the hidden planets parameters? Very probably not.
+                How does an exomoon influence transit variation? Fun :)
 
-    Umlaufzeit:
-        Transitzeitpunkte ermitteln und speichern.
-        Datenhaltung? [stars] x [bodies] x [aktueller Zustand, [(Ereignis, timestamp)]
-        Track transit variations (changes in orbiting period). Do they suggest hidden planets? Can I guess the hidden planets parameters? Very probably not.
-        !!! How does an exomoon influence transit variation? Fun :)
+    ?Was ist mit zu berechnenden state_vectors von Körpern, die nicht eclipsen? Also auch Omega und nu nicht 270° haben?
 
     Model variable stars:
         Parameter für regelmäßige Helligkeitsänderungen: variation = [(amplitude, periode, phase(shift?))]

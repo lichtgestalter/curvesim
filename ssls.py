@@ -61,8 +61,8 @@ class Parameters:
         self.star_scale_top = eval(config.get("Scale", "star_scale_top"))
         self.planet_scale_top = eval(config.get("Scale", "planet_scale_top"))
         self.autoscaling = config.get("Scale", "autoscaling") == "on"
-        self.min_diameter = eval(config.get("Scale", "min_diameter")) / 100.0
-        self.max_diameter = eval(config.get("Scale", "max_diameter")) / 100.0
+        self.min_radius = eval(config.get("Scale", "min_radius")) / 100.0
+        self.max_radius = eval(config.get("Scale", "max_radius")) / 100.0
 
         # [Plot]
         self.figure_width = eval(config.get("Plot", "figure_width"))
@@ -87,20 +87,20 @@ class Parameters:
 # noinspection NonAsciiCharacters,PyPep8Naming,PyUnusedLocal
 class Body:
     def __init__(self, name, body_type, mass, radius, luminosity, startposition, velocity, a, e, i, Ω, ω, ϖ, L, ma, ea,
-                 nu, T, t, main_gravity_body, beta, color):
+                 nu, T, t, main_gravity_bodies, beta, color):
         """Initialize instance of physical body."""
         # For ease of use of constants in the config file they are additionally defined here without the prefix "p.".
         g, au, r_sun, m_sun, l_sun = P.g, P.au, P.r_sun, P.m_sun, P.l_sun
         r_jup, m_jup, r_earth, m_earth, v_earth = P.r_jup, P.m_jup, P.r_earth, P.m_earth, P.v_earth
         self.name = name  # name
-        self.body_type = body_type  # "star"/"planet"/"barycenter"
+        self.body_type = body_type  # "star" or "planet"
         self.mass = mass  # [kg]
         self.radius = radius  # [m]
         self.area_2d = math.pi * radius ** 2  # [m**2]
         self.luminosity = luminosity  # [W]
         self.brightness = luminosity / self.area_2d  # luminosity per (apparent) area [W/m**2]
         self.positions = np.zeros((P.iterations, 3), dtype=float)  # position for each frame
-        self.main_gravity_body = main_gravity_body  # Used for calculating mu
+        self.main_gravity_bodies = main_gravity_bodies  # Used for calculating mu
         self.color = color  # (R, G, B)  each between 0 and 1
 
         if body_type == "planet":
@@ -139,42 +139,40 @@ class Body:
         self.d, self.h, self.angle, self.eclipsed_area = 0.0, 0.0, 0.0, 0.0
 
     @staticmethod
-    def calc_patch_diameters(bodies):
-        """todo XXXXXXXXXXXXXXXXXXXXXXXXXX"""
+    def calc_patch_radii(bodies):
+        """If autoscaling is on, this function calculates the radii of the circles (matplotlib patches) of the animation."""
         radius_list = [body.radius for body in bodies]  # radii of all bodies
         # print(f'{rlist=}')
         log_list = [math.log10(i) for i in radius_list]  # log10 of all radii
         # print(f'{log_list=}')
-        log_scaled_list = [i * P.min_diameter / min(log_list) for i in log_list]  # scaled log10 lineary, so the smallest circle has the desired diameter
+        log_scaled_list = [i * P.min_radius / min(log_list) for i in log_list]  # scaled log10 lineary, so the smallest circle has the desired radius
         # print(f'{min_ok=}')
-        exp_numerator = math.log10((P.max_diameter - max(log_scaled_list)) / max(log_scaled_list))
+        exp_numerator = math.log10((P.max_radius - max(log_scaled_list)) / max(log_scaled_list))
         exp_denominator = math.log10(max(log_list) - min(log_list))
         # print(x, y, exponent)
-        diameter_list = [i * (1 + (j - min(log_list)) ** (exp_numerator / exp_denominator)) for i, j in zip(log_scaled_list, log_list)]  # scaled log10 exponentially, so all circles have the desired diameter
+        radius_list = [i * (1 + (j - min(log_list)) ** (exp_numerator / exp_denominator)) for i, j in zip(log_scaled_list, log_list)]  # scaled log10 exponentially, so all circles have the desired radius
         # print(f'{fertig=}')
-        for body, diameter in zip(bodies, diameter_list):
-            body.patch_diameter = diameter
-        # todo: funktioniert noch nicht, falls barycenter (mit Radius = 0 oder so ähnlich) in bodies enthalten sind
+        for body, radius in zip(bodies, radius_list):
+            body.patch_radius = radius
 
     @staticmethod
     def generate_patches(bodies):
-        """todo XXXXXXXXXXXXXXXXXXXXXXXXX"""
+        """Generates the circles (matplotlib patches) of the animation."""
         if P.autoscaling:
             print("autoscaling on")
-            Body.calc_patch_diameters(bodies)
+            Body.calc_patch_radii(bodies)
             for body in bodies:
-                body.circle_top = matplotlib.patches.Circle(xy=(0, 0), radius=body.patch_diameter)  # Matplotlib patch for top view
-                body.circle_ecl = matplotlib.patches.Circle(xy=(0, 0), radius=body.patch_diameter)  # Matplotlib patch for eclipsed view
+                body.circle_top = matplotlib.patches.Circle(xy=(0, 0), radius=body.patch_radius)  # Matplotlib patch for top view
+                body.circle_ecl = matplotlib.patches.Circle(xy=(0, 0), radius=body.patch_radius)  # Matplotlib patch for eclipsed view
         else:
             print("autoscaling off")
             for body in bodies:
-                extrascale_ecl, extrascale_top = 0, 0  # Making sure these variables are defined for barycenters also.
                 if body.body_type == "planet":
                     extrascale_ecl, extrascale_top = P.planet_scale_ecl, P.planet_scale_top  # Scale radius in plot.
-                if body.body_type == "star":
+                else:
                     extrascale_ecl, extrascale_top = P.star_scale_ecl, P.star_scale_top  # It's a star. Scale radius in plot accordingly.
-                body.circle_top = matplotlib.patches.Circle((0, 0), radius=body.radius * extrascale_top / P.scope_top)  # Matplotlib patch for top view
-                body.circle_ecl = matplotlib.patches.Circle((0, 0), radius=body.radius * extrascale_ecl / P.scope_ecl)  # Matplotlib patch for eclipsed view
+                    body.circle_top = matplotlib.patches.Circle((0, 0), radius=body.radius * extrascale_top / P.scope_top)  # Matplotlib patch for top view
+                    body.circle_ecl = matplotlib.patches.Circle((0, 0), radius=body.radius * extrascale_ecl / P.scope_ecl)  # Matplotlib patch for eclipsed view
 
     def keplerian_elements_to_state_vectors(self):
         """Calculates the state vectors (position and velocity) from Keplerian Orbit Elements.
@@ -237,8 +235,11 @@ class Body:
 
     def calc_state_vectors(self, bodies):
         """Get initial position and velocity of the physical body self."""
-        other_body = body_from_name(bodies, self.main_gravity_body)
-        self.mu = gravitational_parameter(self, other_body)
+        if self.main_gravity_bodies is not None:
+            other_bodies = []
+            for name in self.main_gravity_bodies:
+                other_bodies.append(body_from_name(bodies, name))
+            self.mu = gravitational_parameter(self, other_bodies)
         if self.velocity is None:  # State vectors are not in config file. So they will be calculated from Kepler orbit parameters instead.
             pos, vel, *_ = self.keplerian_elements_to_state_vectors()
             self.positions[0] = np.array(pos, dtype=float)  # [m] initial position
@@ -309,7 +310,9 @@ def find_and_check_config_file(default):
 
 # noinspection PyUnusedLocal
 def init_bodies(configfilename, standard_sections):
-    """Read program parameters and properties of the physical bodies from config file."""
+    """Initialize instances of physical bodies.
+    Read program parameters and properties of the bodies from config file.
+    Initialize the circles in the animation (matplotlib patches)"""
     # For ease of use of these constants in the config file they are additionally defined here without the prefix "P.".
     g, au, r_sun, m_sun, l_sun = P.g, P.au, P.r_sun, P.m_sun, P.l_sun
     r_jup, m_jup, r_earth, m_earth, v_earth = P.r_jup, P.m_jup, P.r_earth, P.m_earth, P.v_earth
@@ -339,7 +342,7 @@ def init_bodies(configfilename, standard_sections):
                                nu=None if config.get(section, "nu", fallback=None) is None else eval(config.get(section, "nu")),
                                T=None if config.get(section, "T", fallback=None) is None else eval(config.get(section, "T")),
                                t=None if config.get(section, "t", fallback=None) is None else eval(config.get(section, "t")),
-                               main_gravity_body=config.get(section, "main_gravity_body", fallback=None),
+                               main_gravity_bodies=None if config.get(section, "main_gravity_bodies", fallback=None) is None else eval(config.get(section, "main_gravity_bodies")),
                                beta=eval(config.get(section, "beta")),
                                color=tuple([eval(x) for x in config.get(section, "color").split(",")])))
     # Checking parameters of physical bodies
@@ -405,7 +408,10 @@ def gravitational_parameter(body1, body2):
     if body1 is None or body2 is None:
         return None
     else:
-        return P.g * (body1.mass + body2.mass)
+        mass = body1.mass
+        for body in body2:
+            mass += body.mass
+        return P.g * mass
 
 
 def distance_2d_ecl(body1, body2, i):
