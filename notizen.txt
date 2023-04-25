@@ -24,9 +24,7 @@ Questions for next zoom call:
     Is there a community of astronomers specialized in exoplanets that would be welcoming to a dabbling layman like me?
 
 next:
-    Meine letzte Änderung:
-
-        Macht das physikalisch überhaupt Sinn?
+    Meine letzte Änderung: Nutze Liste von main_gravity_bodies für calculating mu: Macht das physikalisch überhaupt Sinn?
     Google:
         pycharm move function into class
         pycharm convert function into class method
