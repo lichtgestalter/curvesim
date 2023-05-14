@@ -142,7 +142,7 @@ def update(frame, planets, circles):
     return circles,
 
 
-# Parameters
+# CurveSimParameters
 FPS = 30 # frames per second. Proportional zur Bewegungsgeschwindigkeit der Körper in der Animation.
 DT = 5e4  # time difference for one iteration
 Frames = 2400  # number of iterations/frames. Proportional zur Rechenzeit des Programms und zur Länge der Animation.

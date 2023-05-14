@@ -27,7 +27,8 @@ import time
 # sys.argv[1]="ssls.ini"
 
 
-class Parameters:
+class CurveSimParameters:
+
     def __init__(self, config, standard_sections):
         """Read program parameters and properties of the physical bodies from config file."""
         # [Astronomical Constants]
@@ -83,9 +84,34 @@ class Parameters:
                     print(f'{self=}   {key=}   {getattr(self, key)=}    {type(getattr(self, key))=}')
                     raise Exception(f"No parameter in sections {standard_sections} may be zero or negative.")
 
+    @staticmethod
+    def find_and_check_config_file(default):
+        """Check program parameters and extract config file name from them.
+        Check if config file can be opened and contains all standard sections."""
+        # Check program parameters and extract config file name from them.
+        if len(sys.argv) == 1:
+            configfilename = default
+            print(f'Using default config file {configfilename}. Specify config file name as program parameter if you '
+                  f'want to use another config file.')
+        elif len(sys.argv) == 2:
+            configfilename = sys.argv[1]
+            print(f'Using {configfilename} as config file.')
+        else:
+            configfilename = sys.argv[1]
+            print(f'Using {configfilename} as config file. Further program parameters are ignored.')
+        config = configparser.ConfigParser(inline_comment_prefixes='#')  # Read config file.
+        if len(config.read(configfilename)) < 1:  # Can the config file be opened?
+            raise Exception("""config file not found. Check program parameter. If you run this script in a jupyter 
+            notebook, add sys.argv[1]='ssls.ini' to the script. """)
+        for section in Standard_sections:  # Does the config file contain all standard sections?
+            if section not in config.sections():
+                raise Exception(f'Section {section} missing in config file.')
+        return configfilename
+
 
 # noinspection NonAsciiCharacters,PyPep8Naming,PyUnusedLocal
-class Body:
+class CurveSimBody:
+
     def __init__(self, name, body_type, mass, radius, luminosity, startposition, velocity, a, e, i, Ω, ω, ϖ, L, ma, ea,
                  nu, T, t, beta, color):
         """Initialize instance of physical body."""
@@ -159,7 +185,7 @@ class Body:
         """Generates the circles (matplotlib patches) of the animation."""
         if P.autoscaling:
             print("autoscaling on")
-            Body.calc_patch_radii(bodies)
+            CurveSimBody.calc_patch_radii(bodies)
             for body in bodies:
                 body.circle_top = matplotlib.patches.Circle(xy=(0, 0), radius=body.patch_radius)  # Matplotlib patch for top view
                 body.circle_ecl = matplotlib.patches.Circle(xy=(0, 0), radius=body.patch_radius)  # Matplotlib patch for eclipsed view
@@ -200,13 +226,13 @@ class Body:
                 ma = ea - e * math.sin(ea)  # 2b: Mean anomaly (from eccentric anomaly). Just for completeness.
             else:  # nu, ea not provided
                 if ma is not None:  # ma provided
-                    ea = keplers_equation_root(e, ma, ea_guess=ma)  # A good guess is important. With guess=0 the root finder very often does not converge.
+                    ea = CurveSimPhysics.kepler_equation_root(e, ma, ea_guess=ma)  # A good guess is important. With guess=0 the root finder very often does not converge.
                     nu = 2 * math.atan(math.sqrt((1 + e) / (1 - e)) * math.tan(ea / 2))  # 3b: true anomaly (from eccentric anomaly)
                 else:  # nu, ea, ma not provided
                     if T is not None:  # T provided
                         n = math.sqrt(mu / a ** 3)  # 1b: Mean angular motion. Not needed in this function. (Except for ma, which is not needed.)
                         ma = n * T  # 1b: Mean anomaly at time of periapsis (from angular motion).
-                        ea = keplers_equation_root(e, ma, ea_guess=ma)  # A good guess is important. With guess=0 the root finder very often does not converge.
+                        ea = CurveSimPhysics.kepler_equation_root(e, ma, ea_guess=ma)  # A good guess is important. With guess=0 the root finder very often does not converge.
                         nu = 2 * math.atan(math.sqrt((1 + e) / (1 - e)) * math.tan(ea / 2))  # 3b: true anomaly (from eccentric anomaly)
                     else:  # nu, ea, ma, T not provided
                         raise Exception("nu or ma or ea or T has to be provided to keplerian_elements_to_state_vectors()")
@@ -216,7 +242,7 @@ class Body:
         # Now update ma, ea and nu for a delay
         # print(f'@Transit: {math.degrees(nu) =   :4.0f}   {math.degrees(ma) =   :4.0f}   {math.degrees(ea) =   :4.0f}')
         ma += t * n  # 1b
-        ea = keplers_equation_root(e, ma, ea_guess=ma)  # A good guess is important. With guess=0 the root finder very often does not converge.
+        ea = CurveSimPhysics.kepler_equation_root(e, ma, ea_guess=ma)  # A good guess is important. With guess=0 the root finder very often does not converge.
         nu = 2 * math.atan(math.sqrt((1 + e) / (1 - e)) * math.tan(ea / 2))  # 3b: true anomaly (from eccentric anomaly)
         # print(f' delayed: {math.degrees(nu) =   :4.0f}   {math.degrees(ma) =   :4.0f}   {math.degrees(ea) =   :4.0f}')
         # nu = nu % (2*math.pi)
@@ -234,7 +260,7 @@ class Body:
 
     def calc_state_vectors(self, bodies):
         """Get initial position and velocity of the physical body self."""
-        self.mu = gravitational_parameter(bodies)  # is the same for all bodies in the system, because they are orbiting a common barycenter
+        self.mu = CurveSimPhysics.gravitational_parameter(bodies)  # is the same for all bodies in the system, because they are orbiting a common barycenter
         if self.velocity is None:  # State vectors are not in config file. So they will be calculated from Kepler orbit parameters instead.
             pos, vel, *_ = self.keplerian_elements_to_state_vectors()
             self.positions[0] = np.array(pos, dtype=float)  # [m] initial position
@@ -279,130 +305,101 @@ class Body:
             return 0.0, 0.0
 
 
-def find_and_check_config_file(default):
-    """Check program parameters and extract config file name from them.
-    Check if config file can be opened and contains all standard sections."""
-    # Check program parameters and extract config file name from them.
-    if len(sys.argv) == 1:
-        configfilename = default
-        print(f'Using default config file {configfilename}. Specify config file name as program parameter if you '
-              f'want to use another config file.')
-    elif len(sys.argv) == 2:
-        configfilename = sys.argv[1]
-        print(f'Using {configfilename} as config file.')
-    else:
-        configfilename = sys.argv[1]
-        print(f'Using {configfilename} as config file. Further program parameters are ignored.')
-    config = configparser.ConfigParser(inline_comment_prefixes='#')  # Read config file.
-    if len(config.read(configfilename)) < 1:  # Can the config file be opened?
-        raise Exception("""config file not found. Check program parameter. If you run this script in a jupyter 
-        notebook, add sys.argv[1]='ssls.ini' to the script. """)
-    for section in Standard_sections:  # Does the config file contain all standard sections?
-        if section not in config.sections():
-            raise Exception(f'Section {section} missing in config file.')
-    return configfilename
+class CurveSimBodies:
 
+    # noinspection PyUnusedLocal
+    @staticmethod
+    def init_bodies(configfilename, standard_sections):
+        """Initialize instances of physical bodies.
+        Read program parameters and properties of the bodies from config file.
+        Initialize the circles in the animation (matplotlib patches)"""
+        # For ease of use of these constants in the config file they are additionally defined here without the prefix "P.".
+        g, au, r_sun, m_sun, l_sun = P.g, P.au, P.r_sun, P.m_sun, P.l_sun
+        r_jup, m_jup, r_earth, m_earth, v_earth = P.r_jup, P.m_jup, P.r_earth, P.m_earth, P.v_earth
+        bodies = []
+        config = configparser.ConfigParser(inline_comment_prefixes='#')
+        config.read(configfilename)  # Read config file. (Has been done moments before for reading the program parameters.)
 
-# noinspection PyUnusedLocal
-def init_bodies(configfilename, standard_sections):
-    """Initialize instances of physical bodies.
-    Read program parameters and properties of the bodies from config file.
-    Initialize the circles in the animation (matplotlib patches)"""
-    # For ease of use of these constants in the config file they are additionally defined here without the prefix "P.".
-    g, au, r_sun, m_sun, l_sun = P.g, P.au, P.r_sun, P.m_sun, P.l_sun
-    r_jup, m_jup, r_earth, m_earth, v_earth = P.r_jup, P.m_jup, P.r_earth, P.m_earth, P.v_earth
-    bodies = []
-    config = configparser.ConfigParser(inline_comment_prefixes='#')
-    config.read(configfilename)  # Read config file. (Has been done moments before for reading the program parameters.)
-
-    # Physical bodies
-    for section in config.sections():
-        if section not in standard_sections:  # This section must describe a physical object.
-            bodies.append(Body(name=section,
-                               body_type=config.get(section, "body_type"),
-                               mass=eval(config.get(section, "mass")),
-                               radius=eval(config.get(section, "radius")),
-                               luminosity=None if config.get(section, "luminosity", fallback=None) is None else eval(config.get(section, "luminosity")),
-                               startposition=config.get(section, "startposition", fallback=None),
-                               velocity=config.get(section, "velocity", fallback=None),
-                               a=None if config.get(section, "a", fallback=None) is None else eval(config.get(section, "a")),  # a bit long-winded because eval() cannot handle None
-                               e=None if config.get(section, "e", fallback=None) is None else eval(config.get(section, "e")),
-                               i=None if config.get(section, "i", fallback=None) is None else eval(config.get(section, "i")),
-                               Ω=None if config.get(section, "longitude_of_ascending_node", fallback=None) is None else eval(config.get(section, "longitude_of_ascending_node")),
-                               ω=None if config.get(section, "argument_of_periapsis", fallback=None) is None else eval(config.get(section, "argument_of_periapsis")),
-                               ϖ=None if config.get(section, "longitude_of_periapsis", fallback=None) is None else eval(config.get(section, "longitude_of_periapsis")),
-                               L=None if config.get(section, "L", fallback=None) is None else eval(config.get(section, "L")),
-                               ma=None if config.get(section, "ma", fallback=None) is None else eval(config.get(section, "ma")),
-                               ea=None if config.get(section, "ea", fallback=None) is None else eval(config.get(section, "ea")),
-                               nu=None if config.get(section, "nu", fallback=None) is None else eval(config.get(section, "nu")),
-                               T=None if config.get(section, "T", fallback=None) is None else eval(config.get(section, "T")),
-                               t=None if config.get(section, "t", fallback=None) is None else eval(config.get(section, "t")),
-                               beta=eval(config.get(section, "beta")),
-                               color=tuple([eval(x) for x in config.get(section, "color").split(",")])))
-    # Checking parameters of physical bodies
-    if len(bodies) < 1:
-        raise Exception("No physical bodies specified.")
-    for body in bodies:
-        if body.radius <= 0:
-            raise Exception(f'{body.name} has invalid radius {body.radius}.')
-        if body.mass <= 0:
-            raise Exception(f'{body.name} has invalid mass {body.mass}.')
-        if body.luminosity < 0:
-            raise Exception(f'{body.name} has invalid luminosity {body.luminosity}.')
-        if body.luminosity > 0 >= body.beta:  # if body.luminosity > 0 and body.beta <= 0:
-            raise Exception(f'{body.name} has invalid limb darkening parameter beta {body.beta}.')
-        for c in body.color:
-            if c < 0 or c > 1:
-                raise Exception(f'{body.name} has invalid color value {c}.')
-    Body.generate_patches(bodies)
-    return bodies
-
-
-def body_from_name(bodies, bodyname):
-    """Returns the body from the list bodies, which has the name bodyname."""
-    if bodyname is None:
-        return None
-    else:
+        # Physical bodies
+        for section in config.sections():
+            if section not in standard_sections:  # This section must describe a physical object.
+                bodies.append(CurveSimBody(name=section,
+                                           body_type=config.get(section, "body_type"),
+                                           mass=eval(config.get(section, "mass")),
+                                           radius=eval(config.get(section, "radius")),
+                                           luminosity=None if config.get(section, "luminosity", fallback=None) is None else eval(config.get(section, "luminosity")),
+                                           startposition=config.get(section, "startposition", fallback=None),
+                                           velocity=config.get(section, "velocity", fallback=None),
+                                           a=None if config.get(section, "a", fallback=None) is None else eval(config.get(section, "a")),  # a bit long-winded because eval() cannot handle None
+                                           e=None if config.get(section, "e", fallback=None) is None else eval(config.get(section, "e")),
+                                           i=None if config.get(section, "i", fallback=None) is None else eval(config.get(section, "i")),
+                                           Ω=None if config.get(section, "longitude_of_ascending_node", fallback=None) is None else eval(config.get(section, "longitude_of_ascending_node")),
+                                           ω=None if config.get(section, "argument_of_periapsis", fallback=None) is None else eval(config.get(section, "argument_of_periapsis")),
+                                           ϖ=None if config.get(section, "longitude_of_periapsis", fallback=None) is None else eval(config.get(section, "longitude_of_periapsis")),
+                                           L=None if config.get(section, "L", fallback=None) is None else eval(config.get(section, "L")),
+                                           ma=None if config.get(section, "ma", fallback=None) is None else eval(config.get(section, "ma")),
+                                           ea=None if config.get(section, "ea", fallback=None) is None else eval(config.get(section, "ea")),
+                                           nu=None if config.get(section, "nu", fallback=None) is None else eval(config.get(section, "nu")),
+                                           T=None if config.get(section, "T", fallback=None) is None else eval(config.get(section, "T")),
+                                           t=None if config.get(section, "t", fallback=None) is None else eval(config.get(section, "t")),
+                                           beta=eval(config.get(section, "beta")),
+                                           color=tuple([eval(x) for x in config.get(section, "color").split(",")])))
+        # Checking parameters of physical bodies
+        if len(bodies) < 1:
+            raise Exception("No physical bodies specified.")
         for body in bodies:
-            if body.name == bodyname:
-                return body
-        return None
+            if body.radius <= 0:
+                raise Exception(f'{body.name} has invalid radius {body.radius}.')
+            if body.mass <= 0:
+                raise Exception(f'{body.name} has invalid mass {body.mass}.')
+            if body.luminosity < 0:
+                raise Exception(f'{body.name} has invalid luminosity {body.luminosity}.')
+            if body.luminosity > 0 >= body.beta:  # if body.luminosity > 0 and body.beta <= 0:
+                raise Exception(f'{body.name} has invalid limb darkening parameter beta {body.beta}.')
+            for c in body.color:
+                if c < 0 or c > 1:
+                    raise Exception(f'{body.name} has invalid color value {c}.')
+        CurveSimBody.generate_patches(bodies)
+        return bodies
 
 
-def keplers_equation(ea, e, ma):
-    """ea: eccentric anomaly [rad], e: eccentricity, ma: mean anomaly [rad]"""
-    if not -2 * math.pi < ea < 2 * math.pi:
-        raise ValueError("eccentric anomaly ea must be in radians but is outside of the range ]-2π;2π[")
-    if not -2 * math.pi < ma < 2 * math.pi:
-        raise ValueError("mean anomaly ma must be in radians but is outside of the range ]-2π;2π[")
-    if not 0 <= e < 1:
-        raise ValueError("eccentricity e is outside of the range [0;1[")
-    return ea - e * math.sin(ea) - ma
+class CurveSimPhysics:
 
+    @staticmethod
+    def kepler_equation(ea, e, ma):
+        """ea: eccentric anomaly [rad], e: eccentricity, ma: mean anomaly [rad]"""
+        if not -2 * math.pi < ea < 2 * math.pi:
+            raise ValueError("eccentric anomaly ea must be in radians but is outside of the range ]-2π;2π[")
+        if not -2 * math.pi < ma < 2 * math.pi:
+            raise ValueError("mean anomaly ma must be in radians but is outside of the range ]-2π;2π[")
+        if not 0 <= e < 1:
+            raise ValueError("eccentricity e is outside of the range [0;1[")
+        return ea - e * math.sin(ea) - ma
 
-def keplers_equation_derivative(ea, e):
-    """ea: eccentric anomaly [rad], e: eccentricity"""
-    return 1.0 - e * math.cos(ea)
+    @staticmethod
+    def kepler_equation_derivative(ea, e):
+        """ea: eccentric anomaly [rad], e: eccentricity"""
+        return 1.0 - e * math.cos(ea)
 
+    @staticmethod
+    def kepler_equation_root(e, ma, ea_guess=0.0, tolerance=1e-10, max_steps=50):
+        """Calculate the root of the Kepler Equation with the Newton–Raphson method.
+            e: eccentricity, ma: mean anomaly [rad], ea_guess: eccentric anomaly [rad]. ea_guess=ma is a good start."""
+        for n in range(max_steps):
+            delta = CurveSimPhysics.kepler_equation(ea_guess, e, ma) / CurveSimPhysics.kepler_equation_derivative(ea_guess, e)
+            if abs(delta) < tolerance:
+                return ea_guess - delta
+            ea_guess -= delta
+        raise RuntimeError('Newton\'s root solver did not converge.')
 
-def keplers_equation_root(e, ma, ea_guess=0.0, tolerance=1e-10, max_steps=50):
-    """Calculate the root of the Kepler Equation with the Newton–Raphson method.
-        e: eccentricity, ma: mean anomaly [rad], ea_guess: eccentric anomaly [rad]. ea_guess=ma is a good start."""
-    for n in range(max_steps):
-        delta = keplers_equation(ea_guess, e, ma) / keplers_equation_derivative(ea_guess, e)
-        if abs(delta) < tolerance:
-            return ea_guess - delta
-        ea_guess -= delta
-    raise RuntimeError('Newton\'s root solver did not converge.')
-
-
-def gravitational_parameter(bodies):
-    """Calculate the gravitational parameter of masses orbiting a common barycenter
-    https://en.wikipedia.org/wiki/Standard_gravitational_parameter"""
-    mass = 0.0
-    for body in bodies:
-        mass += body.mass
-    return P.g * mass
+    @staticmethod
+    def gravitational_parameter(bodies):
+        """Calculate the gravitational parameter of masses orbiting a common barycenter
+        https://en.wikipedia.org/wiki/Standard_gravitational_parameter"""
+        mass = 0.0
+        for body in bodies:
+            mass += body.mass
+        return P.g * mass
 
 
 def distance_2d_ecl(body1, body2, i):
@@ -484,131 +481,134 @@ def calc_physics(bodies):
     return lightcurve, bodies
 
 
-def tic_delta(scope):
-    """Returns a distance between two tics on an axis so that the total
-    number of tics on that axis is between 5 and 10."""
-    if scope <= 0:  # no or constant values
-        return 1
-    delta = 10 ** np.floor(math.log10(scope))
-    if scope / delta < 5:
-        if scope / delta < 2:
-            return delta / 5
+class CurveSimAnimation:
+
+    @staticmethod
+    def tic_delta(scope):
+        """Returns a distance between two tics on an axis so that the total
+        number of tics on that axis is between 5 and 10."""
+        if scope <= 0:  # no or constant values
+            return 1
+        delta = 10 ** np.floor(math.log10(scope))
+        if scope / delta < 5:
+            if scope / delta < 2:
+                return delta / 5
+            else:
+                return delta / 2
         else:
-            return delta / 2
-    else:
-        return delta
+            return delta
 
+    @staticmethod
+    def init_plot(sampled_lightcurve):
+        """Initialize the matplotlib figure containing 3 axis:
+        Eclipse view (top left): projection (x,y,z) -> (x,z), order = -y.
+        Top view (top right): projection (x,y,z) -> (x,y), order = z.
+        Lightcurve (bottom)"""
+        fig = plt.figure()
+        fig.set_figwidth(P.figure_width)
+        fig.set_figheight(P.figure_height)
+        fig.set_facecolor("black")  # background color outside of ax_eclipse and ax_lightcurve
+        buffer = 0
+        fig.subplots_adjust(left=buffer, right=1.0 - buffer, bottom=buffer, top=1 - buffer)  # Positions of the subplots edges, as a fraction of the figure width.
 
-def init_plot(sampled_lightcurve):
-    """Initialize the matplotlib figure containing 3 axis:
-    Eclipse view (top left): projection (x,y,z) -> (x,z), order = -y.
-    Top view (top right): projection (x,y,z) -> (x,y), order = z.
-    Lightcurve (bottom)"""
-    fig = plt.figure()
-    fig.set_figwidth(P.figure_width)
-    fig.set_figheight(P.figure_height)
-    fig.set_facecolor("black")  # background color outside of ax_eclipse and ax_lightcurve
-    buffer = 0
-    fig.subplots_adjust(left=buffer, right=1.0 - buffer, bottom=buffer, top=1 - buffer)  # Positions of the subplots edges, as a fraction of the figure width.
+        ax_eclipse = plt.subplot2grid(shape=(5, 2), loc=(0, 0), rowspan=4, colspan=1)
+        ax_eclipse.set_xlim(-P.xlim, P.xlim)
+        ax_eclipse.set_ylim(-P.ylim, P.ylim)
+        ax_eclipse.set_aspect('equal')
+        ax_eclipse.set_facecolor("black")  # background color
+        # ax_eclipse.get_xaxis().set_visible(False)
+        # ax_eclipse.get_yaxis().set_visible(False)
 
-    ax_eclipse = plt.subplot2grid(shape=(5, 2), loc=(0, 0), rowspan=4, colspan=1)
-    ax_eclipse.set_xlim(-P.xlim, P.xlim)
-    ax_eclipse.set_ylim(-P.ylim, P.ylim)
-    ax_eclipse.set_aspect('equal')
-    ax_eclipse.set_facecolor("black")  # background color
-    # ax_eclipse.get_xaxis().set_visible(False)
-    # ax_eclipse.get_yaxis().set_visible(False)
+        ax_top = plt.subplot2grid(shape=(5, 2), loc=(0, 1), rowspan=4, colspan=1)
+        ax_top.set_xlim(-P.xlim, P.xlim)
+        ax_top.set_ylim(-P.ylim, P.ylim)
+        ax_top.set_aspect('equal')
+        ax_top.set_facecolor("black")  # background color
 
-    ax_top = plt.subplot2grid(shape=(5, 2), loc=(0, 1), rowspan=4, colspan=1)
-    ax_top.set_xlim(-P.xlim, P.xlim)
-    ax_top.set_ylim(-P.ylim, P.ylim)
-    ax_top.set_aspect('equal')
-    ax_top.set_facecolor("black")  # background color
+        ax_lightcurve = plt.subplot2grid(shape=(5, 1), loc=(4, 0), rowspan=1, colspan=1)
+        ax_lightcurve.set_facecolor("black")  # background color
 
-    ax_lightcurve = plt.subplot2grid(shape=(5, 1), loc=(4, 0), rowspan=1, colspan=1)
-    ax_lightcurve.set_facecolor("black")  # background color
+        ax_lightcurve.tick_params(axis='x', colors='grey')
+        xmax = P.iterations * P.dt / P.x_unit_value
+        ax_lightcurve.set_xlim(0, xmax)
+        xvalues = [x * CurveSimAnimation.tic_delta(xmax) for x in range(round(xmax / CurveSimAnimation.tic_delta(xmax)))]
+        xlabels = [f'{round(x, 4)} {P.x_unit_name}' for x in xvalues]
+        ax_lightcurve.set_xticks(xvalues, labels=xlabels)
 
-    ax_lightcurve.tick_params(axis='x', colors='grey')
-    xmax = P.iterations * P.dt / P.x_unit_value
-    ax_lightcurve.set_xlim(0, xmax)
-    xvalues = [x * tic_delta(xmax) for x in range(round(xmax / tic_delta(xmax)))]
-    xlabels = [f'{round(x, 4)} {P.x_unit_name}' for x in xvalues]
-    ax_lightcurve.set_xticks(xvalues, labels=xlabels)
+        ax_lightcurve.tick_params(axis='y', colors='grey')
+        minl = Lightcurve.min(initial=None)
+        maxl = Lightcurve.max(initial=None)
+        if minl == maxl:
+            minl *= 0.99
+        scope = maxl - minl
+        buffer = 0.05 * scope
+        ax_lightcurve.set_ylim(minl - buffer, maxl + buffer)
 
-    ax_lightcurve.tick_params(axis='y', colors='grey')
-    minl = Lightcurve.min(initial=None)
-    maxl = Lightcurve.max(initial=None)
-    if minl == maxl:
-        minl *= 0.99
-    scope = maxl - minl
-    buffer = 0.05 * scope
-    ax_lightcurve.set_ylim(minl - buffer, maxl + buffer)
+        ticdelta = CurveSimAnimation.tic_delta(maxl - minl)
+        yvalues = [1 - y * ticdelta for y in range(round(float((maxl - minl) / ticdelta)))]
+        ylabels = [f'{round(100 * y, 10)} %' for y in yvalues]
+        ax_lightcurve.set_yticks(yvalues, labels=ylabels)
 
-    ticdelta = tic_delta(maxl - minl)
-    yvalues = [1 - y * ticdelta for y in range(round(float((maxl - minl) / ticdelta)))]
-    ylabels = [f'{round(100 * y, 10)} %' for y in yvalues]
-    ax_lightcurve.set_yticks(yvalues, labels=ylabels)
+        time_axis = np.arange(0, round(P.iterations * P.dt), round(P.sampling_rate * P.dt), dtype=float)
+        time_axis /= P.x_unit_value
+        ax_lightcurve.plot(time_axis, sampled_lightcurve[0:len(time_axis)], color="white")
 
-    time_axis = np.arange(0, round(P.iterations * P.dt), round(P.sampling_rate * P.dt), dtype=float)
-    time_axis /= P.x_unit_value
-    ax_lightcurve.plot(time_axis, sampled_lightcurve[0:len(time_axis)], color="white")
+        red_dot = matplotlib.patches.Ellipse((0, 0), P.iterations * P.dt * P.red_dot_width / P.x_unit_value, scope * P.red_dot_height)  # matplotlib patch
+        red_dot.set(zorder=2)  # Dot in front of lightcurve.
+        red_dot.set_color((1, 0, 0))  # red
+        ax_lightcurve.add_patch(red_dot)
+        plt.tight_layout()  # Automatically adjust padding horizontally as well as vertically.
+        return fig, ax_top, ax_eclipse, ax_lightcurve, red_dot
 
-    red_dot = matplotlib.patches.Ellipse((0, 0), P.iterations * P.dt * P.red_dot_width / P.x_unit_value, scope * P.red_dot_height)  # matplotlib patch
-    red_dot.set(zorder=2)  # Dot in front of lightcurve.
-    red_dot.set_color((1, 0, 0))  # red
-    ax_lightcurve.add_patch(red_dot)
-    plt.tight_layout()  # Automatically adjust padding horizontally as well as vertically.
-    return fig, ax_top, ax_eclipse, ax_lightcurve, red_dot
+    @staticmethod
+    def prepare(bodies):
+        """Initialize all matplotlib objects."""
+        sampled_lightcurve = np.take(Lightcurve, range(0, P.iterations, P.sampling_rate))  # Use only some of the calculated positions for the animation because it is so slow.
+        fig, ax_top, ax_eclipse, ax_lightcurve, red_dot = CurveSimAnimation.init_plot(sampled_lightcurve)  # Adjust constants in section [Plot] of config file to fit your screen.
+        for body in bodies:  # Circles represent the bodies in the animation. Set their colors and add them to the matplotlib axis.
+            body.circle_top.set_color(body.color)
+            body.circle_ecl.set_color(body.color)
+            ax_top.add_patch(body.circle_top)
+            ax_eclipse.add_patch(body.circle_ecl)
+        return fig, bodies, red_dot
 
+    @staticmethod
+    def next_frame(frame, bodies, red_dot):
+        """Update patches. Send new circle positions to animation function.
+        First parameter comes from iterator frames (a parameter of FuncAnimation).
+        The other parameters are given to this function via the parameter fargs of FuncAnimation."""
+        for body in bodies:  # Top view: projection (x,y,z) -> (x,y), order = z
+            body.circle_top.set(zorder=body.positions[frame * P.sampling_rate][2])
+            body.circle_top.center = body.positions[frame * P.sampling_rate][0] / P.scope_top, body.positions[frame * P.sampling_rate][1] / P.scope_top
+        for body in bodies:  # Eclipse view: projection (x,y,z) -> (x,z), order = -y
+            body.circle_ecl.set(zorder=-body.positions[frame * P.sampling_rate][1])
+            body.circle_ecl.center = body.positions[frame * P.sampling_rate][0] / P.scope_ecl, body.positions[frame * P.sampling_rate][2] / P.scope_ecl
+        red_dot.center = P.dt * P.sampling_rate * frame / P.x_unit_value, Lightcurve[frame * P.sampling_rate]
+        if frame >= 10 and frame % int(round(P.frames / 10)) == 0:  # Inform user about program's progress.
+            print(f'{round(frame / P.frames * 10) * 10:3d}% ', end="")
 
-def prepare_animation(bodies):
-    """Initialize all matplotlib objects."""
-    sampled_lightcurve = np.take(Lightcurve, range(0, P.iterations, P.sampling_rate))  # Use only some of the calculated positions for the animation because it is so slow.
-    fig, ax_top, ax_eclipse, ax_lightcurve, red_dot = init_plot(sampled_lightcurve)  # Adjust constants in section [Plot] of config file to fit your screen.
-    for body in bodies:  # Circles represent the bodies in the animation. Set their colors and add them to the matplotlib axis.
-        body.circle_top.set_color(body.color)
-        body.circle_ecl.set_color(body.color)
-        ax_top.add_patch(body.circle_top)
-        ax_eclipse.add_patch(body.circle_ecl)
-    return fig, bodies, red_dot
-
-
-def next_animation_frame(frame, bodies, red_dot):
-    """Update patches. Send new circle positions to animation function.
-    First parameter comes from iterator frames (a parameter of FuncAnimation).
-    The other parameters are given to this function via the parameter fargs of FuncAnimation."""
-    for body in bodies:  # Top view: projection (x,y,z) -> (x,y), order = z
-        body.circle_top.set(zorder=body.positions[frame * P.sampling_rate][2])
-        body.circle_top.center = body.positions[frame * P.sampling_rate][0] / P.scope_top, body.positions[frame * P.sampling_rate][1] / P.scope_top
-    for body in bodies:  # Eclipse view: projection (x,y,z) -> (x,z), order = -y
-        body.circle_ecl.set(zorder=-body.positions[frame * P.sampling_rate][1])
-        body.circle_ecl.center = body.positions[frame * P.sampling_rate][0] / P.scope_ecl, body.positions[frame * P.sampling_rate][2] / P.scope_ecl
-    red_dot.center = P.dt * P.sampling_rate * frame / P.x_unit_value, Lightcurve[frame * P.sampling_rate]
-    if frame >= 10 and frame % int(round(P.frames / 10)) == 0:  # Inform user about program's progress.
-        print(f'{round(frame / P.frames * 10) * 10:3d}% ', end="")
-
-
-def render_animation(bodies, red_dot):
-    """Calls next_animation_frame() for each frame and saves the video."""
-    print(f'Animating {P.frames:8d} frames:     ', end="")
-    tic = time.perf_counter()
-    anim = matplotlib.animation.FuncAnimation(Fig, next_animation_frame, fargs=(bodies, red_dot,), interval=1000 / P.fps, frames=P.frames, blit=False)
-    anim.save(P.video_file, fps=P.fps, metadata={"title": " "}, extra_args=['-vcodec', 'libx264'])  # https://www.ffmpeg.org/libavcodec.html
-    toc = time.perf_counter()
-    print(f' {toc - tic:7.2f} seconds  ({P.frames / (toc - tic):.0f} frames/second)')
-    print(f'{P.video_file} saved.')
-    return bodies, red_dot
+    @staticmethod
+    def render(bodies, red_dot):
+        """Calls next_frame() for each frame and saves the video."""
+        print(f'Animating {P.frames:8d} frames:     ', end="")
+        tic = time.perf_counter()
+        anim = matplotlib.animation.FuncAnimation(Fig, CurveSimAnimation.next_frame, fargs=(bodies, red_dot,), interval=1000 / P.fps, frames=P.frames, blit=False)
+        anim.save(P.video_file, fps=P.fps, metadata={"title": " "}, extra_args=['-vcodec', 'libx264'])  # https://www.ffmpeg.org/libavcodec.html
+        toc = time.perf_counter()
+        print(f' {toc - tic:7.2f} seconds  ({P.frames / (toc - tic):.0f} frames/second)')
+        print(f'{P.video_file} saved.')
+        return bodies, red_dot
 
 
 if __name__ == '__main__':
     Standard_sections = ["Astronomical Constants", "Video", "Plot", "Scale"]
     Config = configparser.ConfigParser(inline_comment_prefixes='#')
-    Configfilename = find_and_check_config_file(default="ssls.ini")
+    Configfilename = CurveSimParameters.find_and_check_config_file(default="ssls.ini")
     Config.read(Configfilename)
-    P = Parameters(Config, Standard_sections)  # Read program parameters from config file.
-    Bodies = init_bodies(Configfilename, Standard_sections)  # Read the properties of the physical bodies from the config file and write them into <bodies>, a list of all physical objects of the simulation.
+    P = CurveSimParameters(Config, Standard_sections)  # Read program parameters from config file.
+    Bodies = CurveSimBodies.init_bodies(Configfilename, Standard_sections)  # Read the properties of the physical bodies from the config file and write them into <bodies>, a list of all physical objects of the simulation.
     for B in Bodies:
         B.calc_state_vectors(Bodies)
     Lightcurve, Bodies = calc_physics(Bodies)  # Calculate body positions and the resulting lightcurve.
-    Fig, Bodies, Red_dot = prepare_animation(Bodies)
-    Bodies, Red_dot = render_animation(Bodies, Red_dot)
+    Fig, Bodies, Red_dot = CurveSimAnimation.prepare(Bodies)
+    Bodies, Red_dot = CurveSimAnimation.render(Bodies, Red_dot)

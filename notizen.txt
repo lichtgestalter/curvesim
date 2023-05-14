@@ -24,17 +24,18 @@ Questions for next zoom call:
     Is there a community of astronomers specialized in exoplanets that would be welcoming to a dabbling layman like me?
 
 next:
+    Ein paar Funktionen in Klassen verschieben
+        Ganz viele Funktionen in CurveSimBodies verschieben
+        init_bodies in CurveSimBodies.__init__ verwandeln?
+
     Aus Kapitel 6 von Noras 3-Stern-System die Kepler-Parameter für TIC470710327_new.ini extrahieren.
-    Video erzeugen, was hoffentlich dem ursprünglichen mit geschätzten Startpos/Startvelocity ähnelt.
-    Das beantwotet dann hoffentlich auch diese Frage:
-        Meine letzte Änderung: Nutze Liste von main_gravity_bodies für calculating mu
-        Macht das physikalisch überhaupt Sinn mu für mehr als 2 Körper zu berechnen?
+    Video erzeugen, was hoffentlich dem ursprünglichen Video mit geschätzten Startpos/Startvelocity ähnelt.
 
     Google:
         pycharm move function into class
         pycharm convert function into class method
+
     Is radii the plural of radius?
-    Ein paar Funktionen in Klasse Body verschieben
 
 später:
     Limb darkening auf die anscheinend übliche Darstellung mit einem linearen Parameter und einem quadratischen Parameter umstellen.
