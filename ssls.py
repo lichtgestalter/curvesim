@@ -87,7 +87,7 @@ class Parameters:
 # noinspection NonAsciiCharacters,PyPep8Naming,PyUnusedLocal
 class Body:
     def __init__(self, name, body_type, mass, radius, luminosity, startposition, velocity, a, e, i, Ω, ω, ϖ, L, ma, ea,
-                 nu, T, t, main_gravity_bodies, beta, color):
+                 nu, T, t, beta, color):
         """Initialize instance of physical body."""
         # For ease of use of constants in the config file they are additionally defined here without the prefix "p.".
         g, au, r_sun, m_sun, l_sun = P.g, P.au, P.r_sun, P.m_sun, P.l_sun
@@ -100,7 +100,6 @@ class Body:
         self.luminosity = luminosity  # [W]
         self.brightness = luminosity / self.area_2d  # luminosity per (apparent) area [W/m**2]
         self.positions = np.zeros((P.iterations, 3), dtype=float)  # position for each frame
-        self.main_gravity_bodies = main_gravity_bodies  # Used for calculating mu
         self.color = color  # (R, G, B)  each between 0 and 1
 
         if body_type == "planet":
@@ -235,11 +234,7 @@ class Body:
 
     def calc_state_vectors(self, bodies):
         """Get initial position and velocity of the physical body self."""
-        if self.main_gravity_bodies is not None:
-            other_bodies = []
-            for name in self.main_gravity_bodies:
-                other_bodies.append(body_from_name(bodies, name))
-            self.mu = gravitational_parameter(self, other_bodies)
+        self.mu = gravitational_parameter(bodies)  # is the same for all bodies in the system, because they are orbiting a common barycenter
         if self.velocity is None:  # State vectors are not in config file. So they will be calculated from Kepler orbit parameters instead.
             pos, vel, *_ = self.keplerian_elements_to_state_vectors()
             self.positions[0] = np.array(pos, dtype=float)  # [m] initial position
@@ -342,7 +337,6 @@ def init_bodies(configfilename, standard_sections):
                                nu=None if config.get(section, "nu", fallback=None) is None else eval(config.get(section, "nu")),
                                T=None if config.get(section, "T", fallback=None) is None else eval(config.get(section, "T")),
                                t=None if config.get(section, "t", fallback=None) is None else eval(config.get(section, "t")),
-                               main_gravity_bodies=None if config.get(section, "main_gravity_bodies", fallback=None) is None else eval(config.get(section, "main_gravity_bodies")),
                                beta=eval(config.get(section, "beta")),
                                color=tuple([eval(x) for x in config.get(section, "color").split(",")])))
     # Checking parameters of physical bodies
@@ -402,16 +396,13 @@ def keplers_equation_root(e, ma, ea_guess=0.0, tolerance=1e-10, max_steps=50):
     raise RuntimeError('Newton\'s root solver did not converge.')
 
 
-def gravitational_parameter(body1, body2):
-    """Calculate the gravitational parameter of two masses
+def gravitational_parameter(bodies):
+    """Calculate the gravitational parameter of masses orbiting a common barycenter
     https://en.wikipedia.org/wiki/Standard_gravitational_parameter"""
-    if body1 is None or body2 is None:
-        return None
-    else:
-        mass = body1.mass
-        for body in body2:
-            mass += body.mass
-        return P.g * mass
+    mass = 0.0
+    for body in bodies:
+        mass += body.mass
+    return P.g * mass
 
 
 def distance_2d_ecl(body1, body2, i):
