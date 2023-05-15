@@ -190,7 +190,7 @@ class CurveSimBody:
         area: Area of self which is eclipsed by body.
         relative_radius: The distance of the approximated center of the eclipsed area from the center of self as a percentage of self.radius (used for limb darkening)."""
         if body.positions[iteration][1] < self.positions[iteration][1]:  # Is body nearer to viewpoint than self? (i.e. its position has a smaller y-coordinate)
-            d = distance_2d_ecl(body, self, iteration)
+            d = CurveSimPhysics.distance_2d_ecl(body, self, iteration)
             if d < self.radius + body.radius:  # Does body eclipse self?
                 if d <= abs(self.radius - body.radius):  # Annular (i.e. ring) eclipse or total eclipse
                     if self.radius < body.radius:  # Total eclipse
@@ -227,7 +227,7 @@ class CurveSimBody:
 class CurveSimBodies(list):
 
     # noinspection PyUnusedLocal
-    def init_bodies(self, configfilename, standard_sections):
+    def __init__(self, configfilename, standard_sections):
         """Initialize instances of physical bodies.
         Read program parameters and properties of the bodies from config file.
         Initialize the circles in the animation (matplotlib patches)"""
@@ -236,6 +236,7 @@ class CurveSimBodies(list):
         r_jup, m_jup, r_earth, m_earth, v_earth = P.r_jup, P.m_jup, P.r_earth, P.m_earth, P.v_earth
         config = configparser.ConfigParser(inline_comment_prefixes='#')
         config.read(configfilename)  # Read config file. (Has been done moments before for reading the program parameters.)
+        super().__init__()
 
         # Physical bodies
         for section in config.sections():
@@ -317,23 +318,23 @@ class CurveSimPhysics:
             mass += body.mass
         return P.g * mass
 
+    @staticmethod
+    def distance_2d_ecl(body1, body2, i):
+        """Return distance of the centers of 2 physical bodies as seen by a viewer (projection y->0)."""
+        dx = body1.positions[i][0] - body2.positions[i][0]
+        dz = body1.positions[i][2] - body2.positions[i][2]
+        return math.sqrt((dx ** 2 + dz ** 2))
 
-def distance_2d_ecl(body1, body2, i):
-    """Return distance of the centers of 2 physical bodies as seen by a viewer (projection y->0)."""
-    dx = body1.positions[i][0] - body2.positions[i][0]
-    dz = body1.positions[i][2] - body2.positions[i][2]
-    return math.sqrt((dx ** 2 + dz ** 2))
-
-
-def limbdarkening(relative_radius, beta):
-    """https://en.wikipedia.org/wiki/Limb_darkening
-    https://de.wikipedia.org/wiki/Photosph%C3%A4re#Mitte-Rand-Verdunkelung
-    Approximates the flux of a star at a point on the star seen from a very large distance.
-    The point's apparent distance from the star's center is relative_radius * radius.
-    Beta depends on the wavelength. Beta=2.3 is a good compromise for the spectrum of visible light."""
-    if relative_radius >= 1:
-        return 1 / (1 + beta)
-    return (1 + beta * math.sqrt(1 - relative_radius ** 2)) / (1 + beta)
+    @staticmethod
+    def limbdarkening(relative_radius, beta):
+        """https://en.wikipedia.org/wiki/Limb_darkening
+        https://de.wikipedia.org/wiki/Photosph%C3%A4re#Mitte-Rand-Verdunkelung
+        Approximates the flux of a star at a point on the star seen from a very large distance.
+        The point's apparent distance from the star's center is relative_radius * radius.
+        Beta depends on the wavelength. Beta=2.3 is a good compromise for the spectrum of visible light."""
+        if relative_radius >= 1:
+            return 1 / (1 + beta)
+        return (1 + beta * math.sqrt(1 - relative_radius ** 2)) / (1 + beta)
 
 
 def total_luminosity(bodies, stars, iteration):
@@ -346,7 +347,7 @@ def total_luminosity(bodies, stars, iteration):
             if body != star:
                 eclipsed_area, relative_radius = star.eclipsed_by(body, iteration)
                 if eclipsed_area != 0:
-                    luminosity -= star.brightness * eclipsed_area * limbdarkening(relative_radius, star.beta)
+                    luminosity -= star.brightness * eclipsed_area * CurveSimPhysics.limbdarkening(relative_radius, star.beta)
     return luminosity
 
 
@@ -521,8 +522,7 @@ if __name__ == '__main__':
     Configfilename = CurveSimParameters.find_and_check_config_file(default="ssls.ini")
     Config.read(Configfilename)
     P = CurveSimParameters(Config, Standard_sections)  # Read program parameters from config file.
-    Bodies = CurveSimBodies()
-    Bodies.init_bodies(Configfilename, Standard_sections)  # Read the properties of the physical bodies from the config file and write them into <bodies>, a list of all physical objects of the simulation.
+    Bodies = CurveSimBodies(Configfilename, Standard_sections)  # Read the properties of the physical bodies from the config file and write them into <Bodies>, a list of all physical objects of the simulation.
     for B in Bodies:
         B.calc_state_vectors(Bodies)
     Lightcurve, Bodies = calc_physics(Bodies)  # Calculate body positions and the resulting lightcurve.
