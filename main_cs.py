@@ -47,7 +47,7 @@ class CurveSimBodies(list):
         # Physical bodies
         for section in config.sections():
             if section not in standard_sections:  # This section must describe a physical object.
-                self.append(CurveSimBody(p=P,
+                self.append(CurveSimBody(p=p,
                                          name=section,
                                          body_type=config.get(section, "body_type"),
                                          mass=eval(config.get(section, "mass")),
@@ -84,7 +84,7 @@ class CurveSimBodies(list):
             for c in body.color:
                 if c < 0 or c > 1:
                     raise Exception(f'{body.name} has invalid color value {c}.')
-            body.calc_state_vectors(P, self)
+            body.calc_state_vectors(p, self)
         self.generate_patches(p)
 
     def total_luminosity(self, stars, iteration):
