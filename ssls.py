@@ -19,94 +19,13 @@ import matplotlib
 import matplotlib.animation
 import matplotlib.pyplot as plt
 import numpy as np
-import sys
 import time
+
+from cs_parameters import CurveSimParameters, Standard_sections
 
 
 # If you run this script in a jupyter notebook, uncomment this line in order to provide the name of your config file.
 # sys.argv[1]="ssls.ini"
-
-
-class CurveSimParameters:
-
-    def __init__(self, config, standard_sections):
-        """Read program parameters and properties of the physical bodies from config file."""
-        # [Astronomical Constants]
-        # For ease of use of these constants in the config file they are additionally defined here without the prefix "self.".
-        g = eval(config.get("Astronomical Constants", "g"))
-        au = eval(config.get("Astronomical Constants", "au"))
-        r_sun = eval(config.get("Astronomical Constants", "r_sun"))
-        m_sun = eval(config.get("Astronomical Constants", "m_sun"))
-        l_sun = eval(config.get("Astronomical Constants", "l_sun"))
-        r_jup = eval(config.get("Astronomical Constants", "r_jup"))
-        m_jup = eval(config.get("Astronomical Constants", "m_jup"))
-        r_earth = eval(config.get("Astronomical Constants", "r_earth"))
-        m_earth = eval(config.get("Astronomical Constants", "m_earth"))
-        v_earth = eval(config.get("Astronomical Constants", "v_earth"))
-        self.g, self.au, self.r_sun, self.m_sun, self.l_sun = g, au, r_sun, m_sun, l_sun,
-        self.r_jup, self.m_jup, self.r_earth, self.m_earth, self.v_earth = r_jup, m_jup, r_earth, m_earth, v_earth
-
-        # [Video]
-        self.video_file = config.get("Video", "video_file")
-        self.frames = eval(config.get("Video", "frames"))
-        self.fps = eval(config.get("Video", "fps"))
-        self.dt = eval(config.get("Video", "dt"))
-        self.sampling_rate = eval(config.get("Video", "sampling_rate"))
-        self.iterations = self.frames * self.sampling_rate
-
-        # [Scale]
-        self.scope_ecl = eval(config.get("Scale", "scope_ecl"))
-        self.star_scale_ecl = eval(config.get("Scale", "star_scale_ecl"))
-        self.planet_scale_ecl = eval(config.get("Scale", "planet_scale_ecl"))
-        self.scope_top = eval(config.get("Scale", "scope_top"))
-        self.star_scale_top = eval(config.get("Scale", "star_scale_top"))
-        self.planet_scale_top = eval(config.get("Scale", "planet_scale_top"))
-        self.autoscaling = config.get("Scale", "autoscaling") == "on"
-        self.min_radius = eval(config.get("Scale", "min_radius")) / 100.0
-        self.max_radius = eval(config.get("Scale", "max_radius")) / 100.0
-
-        # [Plot]
-        self.figure_width = eval(config.get("Plot", "figure_width"))
-        self.figure_height = eval(config.get("Plot", "figure_height"))
-        self.xlim = eval(config.get("Plot", "xlim"))
-        self.ylim = eval(config.get("Plot", "ylim"))
-        self.time_units = {"s": 1, "min": 60, "h": 3600, "d": 24 * 3600,
-                           "mon": 365.25 * 24 * 3600 / 12, "y": 365.25 * 24 * 3600}
-        self.x_unit_name = config.get("Plot", "x_unit")
-        self.x_unit_value = self.time_units[self.x_unit_name]
-        self.red_dot_height = eval(config.get("Plot", "red_dot_height"))
-        self.red_dot_width = eval(config.get("Plot", "red_dot_width"))
-
-        # Checking all parameters defined so far
-        for key in vars(self):
-            if type(getattr(self, key)) not in [str, dict, bool]:
-                if getattr(self, key) <= 0:
-                    print(f'{self=}   {key=}   {getattr(self, key)=}    {type(getattr(self, key))=}')
-                    raise Exception(f"No parameter in sections {standard_sections} may be zero or negative.")
-
-    @staticmethod
-    def find_and_check_config_file(default):
-        """Check program parameters and extract config file name from them.
-        Check if config file can be opened and contains all standard sections."""
-        # Check program parameters and extract config file name from them.
-        if len(sys.argv) == 1:
-            configfilename = default
-            print(f'Using default config file {configfilename}. Specify config file name as program parameter if you '
-                  f'want to use another config file.')
-        elif len(sys.argv) == 2:
-            configfilename = sys.argv[1]
-            print(f'Using {configfilename} as config file.')
-        else:
-            configfilename = sys.argv[1]
-            print(f'Using {configfilename} as config file. Further program parameters are ignored.')
-        config = configparser.ConfigParser(inline_comment_prefixes='#')  # Read config file.
-        if len(config.read(configfilename)) < 1:  # Can the config file be opened?
-            raise Exception("""config file not found. Check program parameter. If you run this script in a jupyter 
-            notebook, add sys.argv[1]='ssls.ini' to the script. """)
-        for section in Standard_sections:  # Does the config file contain all standard sections?
-            if section not in config.sections():
-                raise Exception(f'Section {section} missing in config file.')
-        return configfilename
 
 
 # noinspection NonAsciiCharacters,PyPep8Naming,PyUnusedLocal
@@ -305,25 +224,23 @@ class CurveSimBody:
             return 0.0, 0.0
 
 
-class CurveSimBodies:
+class CurveSimBodies(list):
 
     # noinspection PyUnusedLocal
-    @staticmethod
-    def init_bodies(configfilename, standard_sections):
+    def init_bodies(self, configfilename, standard_sections):
         """Initialize instances of physical bodies.
         Read program parameters and properties of the bodies from config file.
         Initialize the circles in the animation (matplotlib patches)"""
         # For ease of use of these constants in the config file they are additionally defined here without the prefix "P.".
         g, au, r_sun, m_sun, l_sun = P.g, P.au, P.r_sun, P.m_sun, P.l_sun
         r_jup, m_jup, r_earth, m_earth, v_earth = P.r_jup, P.m_jup, P.r_earth, P.m_earth, P.v_earth
-        bodies = []
         config = configparser.ConfigParser(inline_comment_prefixes='#')
         config.read(configfilename)  # Read config file. (Has been done moments before for reading the program parameters.)
 
         # Physical bodies
         for section in config.sections():
             if section not in standard_sections:  # This section must describe a physical object.
-                bodies.append(CurveSimBody(name=section,
+                self.append(CurveSimBody(name=section,
                                            body_type=config.get(section, "body_type"),
                                            mass=eval(config.get(section, "mass")),
                                            radius=eval(config.get(section, "radius")),
@@ -345,9 +262,9 @@ class CurveSimBodies:
                                            beta=eval(config.get(section, "beta")),
                                            color=tuple([eval(x) for x in config.get(section, "color").split(",")])))
         # Checking parameters of physical bodies
-        if len(bodies) < 1:
+        if len(self) < 1:
             raise Exception("No physical bodies specified.")
-        for body in bodies:
+        for body in self:
             if body.radius <= 0:
                 raise Exception(f'{body.name} has invalid radius {body.radius}.')
             if body.mass <= 0:
@@ -359,8 +276,7 @@ class CurveSimBodies:
             for c in body.color:
                 if c < 0 or c > 1:
                     raise Exception(f'{body.name} has invalid color value {c}.')
-        CurveSimBody.generate_patches(bodies)
-        return bodies
+        CurveSimBody.generate_patches(self)
 
 
 class CurveSimPhysics:
@@ -601,12 +517,12 @@ class CurveSimAnimation:
 
 
 if __name__ == '__main__':
-    Standard_sections = ["Astronomical Constants", "Video", "Plot", "Scale"]
     Config = configparser.ConfigParser(inline_comment_prefixes='#')
     Configfilename = CurveSimParameters.find_and_check_config_file(default="ssls.ini")
     Config.read(Configfilename)
     P = CurveSimParameters(Config, Standard_sections)  # Read program parameters from config file.
-    Bodies = CurveSimBodies.init_bodies(Configfilename, Standard_sections)  # Read the properties of the physical bodies from the config file and write them into <bodies>, a list of all physical objects of the simulation.
+    Bodies = CurveSimBodies()
+    Bodies.init_bodies(Configfilename, Standard_sections)  # Read the properties of the physical bodies from the config file and write them into <bodies>, a list of all physical objects of the simulation.
     for B in Bodies:
         B.calc_state_vectors(Bodies)
     Lightcurve, Bodies = calc_physics(Bodies)  # Calculate body positions and the resulting lightcurve.
