@@ -28,9 +28,9 @@ from cs_parameters import CurveSimParameters, Standard_sections
 # sys.argv[1]="ssls.ini"
 
 
-# noinspection NonAsciiCharacters,PyPep8Naming,PyUnusedLocal
 class CurveSimBody:
 
+    # noinspection NonAsciiCharacters,PyPep8Naming,PyUnusedLocal
     def __init__(self, name, body_type, mass, radius, luminosity, startposition, velocity, a, e, i, Ω, ω, ϖ, L, ma, ea,
                  nu, T, t, beta, color):
         """Initialize instance of physical body."""
