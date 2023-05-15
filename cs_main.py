@@ -22,11 +22,15 @@ from cs_parameters import CurveSimParameters, Standard_sections
 # If you run this script in a jupyter notebook, uncomment this line in order to provide the name of your config file.
 # sys.argv[1]="ssls.ini"
 
-if __name__ == '__main__':
+def main():
     config = configparser.ConfigParser(inline_comment_prefixes='#')
     configfilename = CurveSimParameters.find_and_check_config_file(default="ssls.ini")
     config.read(configfilename)
     p = CurveSimParameters(config, Standard_sections)  # Read program parameters from config file.
     bodies = CurveSimBodies(p, configfilename, Standard_sections)  # Initialize the physical bodies, calculate their state vectors and generate their patches for the animation
     lightcurve = bodies.calc_physics(p)  # Calculate body positions and the resulting lightcurve.
-    animation = CurveSimAnimation(p, bodies, lightcurve)  # Create the video
+    CurveSimAnimation(p, bodies, lightcurve)  # Create the video
+
+
+if __name__ == '__main__':
+    main()
