@@ -1,8 +1,6 @@
 import configparser
 import sys
 
-# from ssls import Standard_sections
-
 
 class CurveSimParameters:
 

@@ -17,10 +17,10 @@ import configparser
 import math
 import matplotlib
 import matplotlib.animation
-import matplotlib.pyplot as plt
 import numpy as np
 import time
 
+from cs_animation import CurveSimAnimation
 from cs_parameters import CurveSimParameters, Standard_sections
 
 
@@ -335,6 +335,7 @@ class CurveSimBodies(list):
             for c in body.color:
                 if c < 0 or c > 1:
                     raise Exception(f'{body.name} has invalid color value {c}.')
+            body.calc_state_vectors(self)
         CurveSimBody.generate_patches(self)
 
     def total_luminosity(self, stars, iteration):
@@ -393,122 +394,7 @@ class CurveSimBodies(list):
         lightcurve /= lightcurve.max(initial=None)  # Normalize flux.
         toc = time.perf_counter()
         print(f' {toc - tic:7.2f} seconds  ({P.iterations / (toc - tic):.0f} iterations/second)')
-        return lightcurve, bodies
-
-
-class CurveSimAnimation:
-
-    def __init__(self, bodies, lightcurve):
-        sampled_lightcurve = np.take(lightcurve, range(0, P.iterations, P.sampling_rate))  # Use only some of the calculated positions for the animation because it is so slow.
-        self.fig, ax_top, ax_eclipse, ax_lightcurve, self.red_dot = CurveSimAnimation.init_plot(sampled_lightcurve, lightcurve)  # Adjust constants in section [Plot] of config file to fit your screen.
-        for body in bodies:  # Circles represent the bodies in the animation. Set their colors and add them to the matplotlib axis.
-            body.circle_top.set_color(body.color)
-            body.circle_ecl.set_color(body.color)
-            ax_top.add_patch(body.circle_top)
-            ax_eclipse.add_patch(body.circle_ecl)
-        self.render(bodies, lightcurve)
-
-    @staticmethod
-    def tic_delta(scope):
-        """Returns a distance between two tics on an axis so that the total
-        number of tics on that axis is between 5 and 10."""
-        if scope <= 0:  # no or constant values
-            return 1
-        delta = 10 ** np.floor(math.log10(scope))
-        if scope / delta < 5:
-            if scope / delta < 2:
-                return delta / 5
-            else:
-                return delta / 2
-        else:
-            return delta
-
-    @staticmethod
-    def init_plot(sampled_lightcurve, lightcurve):
-        """Initialize the matplotlib figure containing 3 axis:
-        Eclipse view (top left): projection (x,y,z) -> (x,z), order = -y.
-        Top view (top right): projection (x,y,z) -> (x,y), order = z.
-        lightcurve (bottom)"""
-        fig = plt.figure()
-        fig.set_figwidth(P.figure_width)
-        fig.set_figheight(P.figure_height)
-        fig.set_facecolor("black")  # background color outside of ax_eclipse and ax_lightcurve
-        buffer = 0
-        fig.subplots_adjust(left=buffer, right=1.0 - buffer, bottom=buffer, top=1 - buffer)  # Positions of the subplots edges, as a fraction of the figure width.
-
-        ax_eclipse = plt.subplot2grid(shape=(5, 2), loc=(0, 0), rowspan=4, colspan=1)
-        ax_eclipse.set_xlim(-P.xlim, P.xlim)
-        ax_eclipse.set_ylim(-P.ylim, P.ylim)
-        ax_eclipse.set_aspect('equal')
-        ax_eclipse.set_facecolor("black")  # background color
-        # ax_eclipse.get_xaxis().set_visible(False)
-        # ax_eclipse.get_yaxis().set_visible(False)
-
-        ax_top = plt.subplot2grid(shape=(5, 2), loc=(0, 1), rowspan=4, colspan=1)
-        ax_top.set_xlim(-P.xlim, P.xlim)
-        ax_top.set_ylim(-P.ylim, P.ylim)
-        ax_top.set_aspect('equal')
-        ax_top.set_facecolor("black")  # background color
-
-        ax_lightcurve = plt.subplot2grid(shape=(5, 1), loc=(4, 0), rowspan=1, colspan=1)
-        ax_lightcurve.set_facecolor("black")  # background color
-
-        ax_lightcurve.tick_params(axis='x', colors='grey')
-        xmax = P.iterations * P.dt / P.x_unit_value
-        ax_lightcurve.set_xlim(0, xmax)
-        xvalues = [x * CurveSimAnimation.tic_delta(xmax) for x in range(round(xmax / CurveSimAnimation.tic_delta(xmax)))]
-        xlabels = [f'{round(x, 4)} {P.x_unit_name}' for x in xvalues]
-        ax_lightcurve.set_xticks(xvalues, labels=xlabels)
-
-        ax_lightcurve.tick_params(axis='y', colors='grey')
-        minl = lightcurve.min(initial=None)
-        maxl = lightcurve.max(initial=None)
-        if minl == maxl:
-            minl *= 0.99
-        scope = maxl - minl
-        buffer = 0.05 * scope
-        ax_lightcurve.set_ylim(minl - buffer, maxl + buffer)
-
-        ticdelta = CurveSimAnimation.tic_delta(maxl - minl)
-        yvalues = [1 - y * ticdelta for y in range(round(float((maxl - minl) / ticdelta)))]
-        ylabels = [f'{round(100 * y, 10)} %' for y in yvalues]
-        ax_lightcurve.set_yticks(yvalues, labels=ylabels)
-
-        time_axis = np.arange(0, round(P.iterations * P.dt), round(P.sampling_rate * P.dt), dtype=float)
-        time_axis /= P.x_unit_value
-        ax_lightcurve.plot(time_axis, sampled_lightcurve[0:len(time_axis)], color="white")
-
-        red_dot = matplotlib.patches.Ellipse((0, 0), P.iterations * P.dt * P.red_dot_width / P.x_unit_value, scope * P.red_dot_height)  # matplotlib patch
-        red_dot.set(zorder=2)  # Dot in front of lightcurve.
-        red_dot.set_color((1, 0, 0))  # red
-        ax_lightcurve.add_patch(red_dot)
-        plt.tight_layout()  # Automatically adjust padding horizontally as well as vertically.
-        return fig, ax_top, ax_eclipse, ax_lightcurve, red_dot
-
-    @staticmethod
-    def next_frame(frame, bodies, red_dot, lightcurve):
-        """Update patches. Send new circle positions to animation function.
-        First parameter comes from iterator frames (a parameter of FuncAnimation).
-        The other parameters are given to this function via the parameter fargs of FuncAnimation."""
-        for body in bodies:  # Top view: projection (x,y,z) -> (x,y), order = z
-            body.circle_top.set(zorder=body.positions[frame * P.sampling_rate][2])
-            body.circle_top.center = body.positions[frame * P.sampling_rate][0] / P.scope_top, body.positions[frame * P.sampling_rate][1] / P.scope_top
-        for body in bodies:  # Eclipse view: projection (x,y,z) -> (x,z), order = -y
-            body.circle_ecl.set(zorder=-body.positions[frame * P.sampling_rate][1])
-            body.circle_ecl.center = body.positions[frame * P.sampling_rate][0] / P.scope_ecl, body.positions[frame * P.sampling_rate][2] / P.scope_ecl
-        red_dot.center = P.dt * P.sampling_rate * frame / P.x_unit_value, lightcurve[frame * P.sampling_rate]
-        if frame >= 10 and frame % int(round(P.frames / 10)) == 0:  # Inform user about program's progress.
-            print(f'{round(frame / P.frames * 10) * 10:3d}% ', end="")
-
-    def render(self, bodies, lightcurve):
-        """Calls next_frame() for each frame and saves the video."""
-        print(f'Animating {P.frames:8d} frames:     ', end="")
-        tic = time.perf_counter()
-        anim = matplotlib.animation.FuncAnimation(self.fig, CurveSimAnimation.next_frame, fargs=(bodies, self.red_dot, lightcurve), interval=1000 / P.fps, frames=P.frames, blit=False)
-        anim.save(P.video_file, fps=P.fps, metadata={"title": " "}, extra_args=['-vcodec', 'libx264'])  # https://www.ffmpeg.org/libavcodec.html
-        toc = time.perf_counter()
-        print(f' {toc - tic:7.2f} seconds  ({P.frames / (toc - tic):.0f} frames/second)')
-        print(f'{P.video_file} saved.')
+        return lightcurve
 
 
 if __name__ == '__main__':
@@ -517,7 +403,5 @@ if __name__ == '__main__':
     Config.read(Configfilename)
     P = CurveSimParameters(Config, Standard_sections)  # Read program parameters from config file.
     Bodies = CurveSimBodies(Configfilename, Standard_sections)  # Read the properties of the physical bodies from the config file and write them into <Bodies>, a list of all physical objects of the simulation.
-    for B in Bodies:
-        B.calc_state_vectors(Bodies)
-    Lightcurve, Bodies = Bodies.calc_physics()  # Calculate body positions and the resulting lightcurve.
-    animation = CurveSimAnimation(Bodies, Lightcurve)
+    Lightcurve = Bodies.calc_physics()  # Calculate body positions and the resulting lightcurve.
+    animation = CurveSimAnimation(P, Bodies, Lightcurve)
