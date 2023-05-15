@@ -1,5 +1,4 @@
 import math
-import matplotlib
 import numpy as np
 
 from cs_physics import CurveSimPhysics
@@ -58,42 +57,6 @@ class CurveSimBody:
 
         # Used for calculation of eclipsed area in function eclipsed_by.
         self.d, self.h, self.angle, self.eclipsed_area = 0.0, 0.0, 0.0, 0.0
-
-    @staticmethod
-    def calc_patch_radii(p, bodies):
-        """If autoscaling is on, this function calculates the radii of the circles (matplotlib patches) of the animation."""
-        radius_list = [body.radius for body in bodies]  # radii of all bodies
-        # print(f'{rlist=}')
-        log_list = [math.log10(i) for i in radius_list]  # log10 of all radii
-        # print(f'{log_list=}')
-        log_scaled_list = [i * p.min_radius / min(log_list) for i in log_list]  # scaled log10 lineary, so the smallest circle has the desired radius
-        # print(f'{min_ok=}')
-        exp_numerator = math.log10((p.max_radius - max(log_scaled_list)) / max(log_scaled_list))
-        exp_denominator = math.log10(max(log_list) - min(log_list))
-        # print(x, y, exponent)
-        radius_list = [i * (1 + (j - min(log_list)) ** (exp_numerator / exp_denominator)) for i, j in zip(log_scaled_list, log_list)]  # scaled log10 exponentially, so all circles have the desired radius
-        # print(f'{fertig=}')
-        for body, radius in zip(bodies, radius_list):
-            body.patch_radius = radius
-
-    @staticmethod
-    def generate_patches(p, bodies):
-        """Generates the circles (matplotlib patches) of the animation."""
-        if p.autoscaling:
-            print("autoscaling on")
-            CurveSimBody.calc_patch_radii(p, bodies)
-            for body in bodies:
-                body.circle_top = matplotlib.patches.Circle(xy=(0, 0), radius=body.patch_radius)  # Matplotlib patch for top view
-                body.circle_ecl = matplotlib.patches.Circle(xy=(0, 0), radius=body.patch_radius)  # Matplotlib patch for eclipsed view
-        else:
-            print("autoscaling off")
-            for body in bodies:
-                if body.body_type == "planet":
-                    extrascale_ecl, extrascale_top = p.planet_scale_ecl, p.planet_scale_top  # Scale radius in plot.
-                else:
-                    extrascale_ecl, extrascale_top = p.star_scale_ecl, p.star_scale_top  # It's a star. Scale radius in plot accordingly.
-                body.circle_top = matplotlib.patches.Circle((0, 0), radius=body.radius * extrascale_top / p.scope_top)  # Matplotlib patch for top view
-                body.circle_ecl = matplotlib.patches.Circle((0, 0), radius=body.radius * extrascale_ecl / p.scope_ecl)  # Matplotlib patch for eclipsed view
 
     # noinspection NonAsciiCharacters,PyPep8Naming,PyUnusedLocal
     def keplerian_elements_to_state_vectors(self):
