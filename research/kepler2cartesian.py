@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# This file is not used in the project but parts of its code are used in ssls.py
+# This file is not used in the project but parts of its code are used in curvesim project
 
 # This python script is based on these very helpful sources:
 # [a]: https://web.archive.org/web/20160418175843/https://ccar.colorado.edu/asen5070/handouts/cart2kep2002.pdf

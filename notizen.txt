@@ -1,39 +1,8 @@
-
-Open items from zoom call 29.03.2022:
-    Done: light curve x-axis has now days or other sensible unit (can be configured)
-    Done: light curve y-axis now in normalized Flux
-    Done: formula for eclipsed area now much more precise. All light curve dips are now plausible.
-    Tried and dismissed because 100 times slower: astronomical constants and units from astropy.
-    Done: limb darkening implemented. Source for approximation formula?
-
-Questions for next zoom call:
-    Is the "Transit Impact parameter" usually (more or less) the same for each planet-star-eclipse or does it change from one orbit to the next?
-    I implemented a very feasible approximation formula for limb darkening but I found it only on a German wikipedia page and nowhere else.
-        https://de.wikipedia.org/wiki/Photosph%C3%A4re#Mitte-Rand-Verdunkelung
-        Have you seen this formula and know where it comes from?
-        Should I rather use the better known version (with 2 parameters)?
-    How to model sun spots?
-        Nora said (in episode 37, at 12:00): Spots move away from the center. Why?
-        Nora said (in episode 37, at 14:00): Peaks in frequency spectrum are integer multiples of peak with highest power. (harmonics) Why?
-        Is it sufficient to just model the lowest frequency? How big is the part I would miss?
-    How to model pulsations and the like (sine curve)?
-        Nora said (in episode 37, at 15:30): Peaks in frequency spectrum are random.
-    Should flares be modeled or are they too unpredictable?
-    How do I reliably find out about new papers with interesting star systems? Searching on "arxiv.org"? Or is there a better way?
-    Where do astronomers gather? Is https://astronomy.stackexchange.com/ the best place to ask questions?
-    Is there a community of astronomers specialized in exoplanets that would be welcoming to a dabbling layman like me?
-
 next:
-    Ein paar Funktionen in Klassen verschieben
-        Ganz viele Funktionen in CurveSimBodies verschieben
-        init_bodies in CurveSimBodies.__init__ verwandeln?
+    CurveSimBodies auslagern
 
     Aus Kapitel 6 von Noras 3-Stern-System die Kepler-Parameter für TIC470710327_new.ini extrahieren.
     Video erzeugen, was hoffentlich dem ursprünglichen Video mit geschätzten Startpos/Startvelocity ähnelt.
-
-    Google:
-        pycharm move function into class
-        pycharm convert function into class method
 
     Is radii the plural of radius?
 
@@ -80,3 +49,32 @@ später:
 
 
 
+Open items from zoom call 29.03.2022:
+    Done: light curve x-axis has now days or other sensible unit (can be configured)
+    Done: light curve y-axis now in normalized Flux
+    Done: formula for eclipsed area now much more precise. All light curve dips are now plausible.
+    Tried and dismissed because 100 times slower: astronomical constants and units from astropy.
+    Done: limb darkening implemented. Source for approximation formula?
+
+Questions for next zoom call:
+
+    Is the "Transit Impact parameter" usually (more or less) the same for each planet-star-eclipse or does it change from one orbit to the next?
+    I implemented a very feasible approximation formula for limb darkening but I found it only on a German wikipedia page and nowhere else.
+        https://de.wikipedia.org/wiki/Photosph%C3%A4re#Mitte-Rand-Verdunkelung
+        Have you seen this formula and know where it comes from?
+        Should I rather use the better known version (with 2 parameters)?
+    How to model sun spots?
+        Nora said (in episode 37, at 12:00): Spots move away from the center. Why?
+        Nora said (in episode 37, at 14:00): Peaks in frequency spectrum are integer multiples of peak with highest power. (harmonics) Why?
+        Is it sufficient to just model the lowest frequency? How big is the part I would miss?
+    How to model pulsations and the like (sine curve)?
+        Nora said (in episode 37, at 15:30): Peaks in frequency spectrum are random.
+    Should flares be modeled or are they too unpredictable?
+    How do I reliably find out about new papers with interesting star systems? Searching on "arxiv.org"? Or is there a better way?
+
+    How do I get my project used by others?
+        Publish as a paper?
+            How do I get my project published as a paper?
+                Find a prof?
+    Where do astronomers gather? Is https://astronomy.stackexchange.com/ the best place to ask questions?
+    Is there a community of astronomers specialized in exoplanets that would be welcoming to a dabbling layman like me?
