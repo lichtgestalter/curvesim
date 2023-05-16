@@ -1,6 +1,4 @@
 next:
-    Config in Parameterklasse integrieren?
-
     github in curvesim umbenennen
 
     Aus Kapitel 6 von Noras 3-Stern-System die Kepler-Parameter für TIC470710327_new.ini extrahieren.

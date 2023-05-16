@@ -2,7 +2,7 @@
 # SSLS - Star System Lightcurve Simulator
 # The SSLS calculates the movements and eclipses of celestial bodies and produces a video of this.
 # Specify mass, radius and other properties of some stars and planets in a configuration file.
-# Then run "cs_main.py <configfilename>" to produce the video.
+# Then run "curvesim.py <configfilename>" to produce the video.
 # The video shows simultanously a view of the star system from the top and from the side and
 # the lightcurve of the system's total luminosity over time.
 # Usually you do not need to look at or even modify the python code. Instead control the program's
@@ -17,15 +17,20 @@ from cs_animation import CurveSimAnimation
 from cs_bodies import CurveSimBodies
 from cs_parameters import CurveSimParameters
 
-# If you run this script in a jupyter notebook, uncomment this line in order to provide the name of your config file.
-# sys.argv[1]="ssls.ini"
+# If you run this script in a jupyter notebook, uncomment the next 2 lines in order to provide the name of your config file.
+# import sys
+# sys.argv[1] = "provide_your_config_file_name_here.ini"
 
-def main():
-    p = CurveSimParameters()  # Read program parameters from config file.
-    bodies = CurveSimBodies(p)  # Initialize the physical bodies, calculate their state vectors and generate their patches for the animation
-    lightcurve = bodies.calc_physics(p)  # Calculate body positions and the resulting lightcurve.
-    CurveSimAnimation(p, bodies, lightcurve)  # Create the video
+def curvesim():
+    parameters = CurveSimParameters()  # Read program parameters from config file.
+    bodies = CurveSimBodies(parameters)  # Initialize the physical bodies, calculate their state vectors and generate their patches for the animation
+    lightcurve = bodies.calc_physics(parameters)  # Calculate body positions and the resulting lightcurve.
+    CurveSimAnimation(parameters, bodies, lightcurve)  # Create the video
+    return parameters, bodies, lightcurve
 
 
 if __name__ == '__main__':
-    main()
+    parameters, bodies, lightcurve = curvesim()
+    print(parameters)
+    print(bodies)
+    CurveSimBodies.prettyprint_lightcurve(lightcurve)

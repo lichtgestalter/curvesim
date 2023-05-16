@@ -65,6 +65,12 @@ class CurveSimBodies(list):
             body.calc_state_vectors(p, self)
         self.generate_patches(p)
 
+    def __repr__(self):
+        names = "CurveSimBodies: "
+        for body in self:
+            names += body.name + ", "
+        return names[:-2]
+
     def total_luminosity(self, stars, iteration):
         """"Add luminosity of all stars in the system while checking for eclipses.
         Does not yet work correctly for eclipsed eclipses (three or more bodies in line of sight at the same time)."""
@@ -72,7 +78,7 @@ class CurveSimBodies(list):
         for star in stars:
             luminosity += star.luminosity
             for body in self:
-                if body != star:
+                if body != star:  # an object cannot eclipse itself :)
                     eclipsed_area, relative_radius = star.eclipsed_by(body, iteration)
                     if eclipsed_area != 0:
                         luminosity -= star.brightness * eclipsed_area * CurveSimPhysics.limbdarkening(relative_radius, star.beta)
@@ -123,6 +129,10 @@ class CurveSimBodies(list):
         print(f' {toc - tic:7.2f} seconds  ({p.iterations / (toc - tic):.0f} iterations/second)')
         return lightcurve
 
+    @staticmethod
+    def prettyprint_lightcurve(lightcurve):
+        print(f'{lightcurve.max()=}, {lightcurve.min()=}, {len(lightcurve)=}')
+
     def calc_patch_radii(self, p):
         """If autoscaling is on, this function calculates the radii of the circles (matplotlib patches) of the animation."""
         radius_list = [body.radius for body in self]  # radii of all bodies
@@ -142,13 +152,11 @@ class CurveSimBodies(list):
     def generate_patches(self, p):
         """Generates the circles (matplotlib patches) of the animation."""
         if p.autoscaling:
-            print("autoscaling on")
             self.calc_patch_radii(p)
             for body in self:
                 body.circle_top = matplotlib.patches.Circle(xy=(0, 0), radius=body.patch_radius)  # Matplotlib patch for top view
                 body.circle_ecl = matplotlib.patches.Circle(xy=(0, 0), radius=body.patch_radius)  # Matplotlib patch for eclipsed view
         else:
-            print("autoscaling off")
             for body in self:
                 if body.body_type == "planet":
                     extrascale_ecl, extrascale_top = p.planet_scale_ecl, p.planet_scale_top  # Scale radius in plot.

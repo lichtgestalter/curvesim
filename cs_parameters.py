@@ -65,6 +65,9 @@ class CurveSimParameters:
                     print(f'{self=}   {key=}   {getattr(self, key)=}    {type(getattr(self, key))=}')
                     raise Exception(f"No parameter in sections {self.standard_sections} may be zero or negative.")
 
+    def __repr__(self):
+        return f'CurveSimParameters from {self.configfilename}'
+
     @staticmethod
     def find_and_check_config_file(default, standard_sections):
         """Check program parameters and extract config file name from them.
@@ -82,8 +85,8 @@ class CurveSimParameters:
             print(f'Using {configfilename} as config file. Further program parameters are ignored.')
         config = configparser.ConfigParser(inline_comment_prefixes='#')  # Read config file.
         if len(config.read(configfilename)) < 1:  # Can the config file be opened?
-            raise Exception("""config file not found. Check program parameter. If you run this script in a jupyter 
-            notebook, add sys.argv[1]='ssls.ini' to the script. """)
+            message = f'config file {configfilename} not found. Check program parameter. If you run this script in a jupyter notebook, add sys.argv[1]="configfilename.ini" to the script.'
+            raise Exception(message)
         for section in standard_sections:  # Does the config file contain all standard sections?
             if section not in config.sections():
                 raise Exception(f'Section {section} missing in config file.')
