@@ -4,8 +4,14 @@ import sys
 
 class CurveSimParameters:
 
-    def __init__(self, config, standard_sections):
+    def __init__(self):
         """Read program parameters and properties of the physical bodies from config file."""
+        # Read config file
+        self.standard_sections = ["Astronomical Constants", "Video", "Plot", "Scale"]
+        config = configparser.ConfigParser(inline_comment_prefixes='#')
+        self.configfilename = CurveSimParameters.find_and_check_config_file(default="curvesim.ini", standard_sections=self.standard_sections)
+        config.read(self.configfilename)
+
         # [Astronomical Constants]
         # For ease of use of these constants in the config file they are additionally defined here without the prefix "self.".
         g = eval(config.get("Astronomical Constants", "g"))
@@ -54,13 +60,13 @@ class CurveSimParameters:
 
         # Checking all parameters defined so far
         for key in vars(self):
-            if type(getattr(self, key)) not in [str, dict, bool]:
+            if type(getattr(self, key)) not in [str, dict, bool, list]:
                 if getattr(self, key) <= 0:
                     print(f'{self=}   {key=}   {getattr(self, key)=}    {type(getattr(self, key))=}')
-                    raise Exception(f"No parameter in sections {standard_sections} may be zero or negative.")
+                    raise Exception(f"No parameter in sections {self.standard_sections} may be zero or negative.")
 
     @staticmethod
-    def find_and_check_config_file(default):
+    def find_and_check_config_file(default, standard_sections):
         """Check program parameters and extract config file name from them.
         Check if config file can be opened and contains all standard sections."""
         # Check program parameters and extract config file name from them.
@@ -78,10 +84,7 @@ class CurveSimParameters:
         if len(config.read(configfilename)) < 1:  # Can the config file be opened?
             raise Exception("""config file not found. Check program parameter. If you run this script in a jupyter 
             notebook, add sys.argv[1]='ssls.ini' to the script. """)
-        for section in Standard_sections:  # Does the config file contain all standard sections?
+        for section in standard_sections:  # Does the config file contain all standard sections?
             if section not in config.sections():
                 raise Exception(f'Section {section} missing in config file.')
         return configfilename
-
-
-Standard_sections = ["Astronomical Constants", "Video", "Plot", "Scale"]

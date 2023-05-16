@@ -11,7 +11,7 @@ from cs_physics import CurveSimPhysics
 class CurveSimBodies(list):
 
     # noinspection PyUnusedLocal
-    def __init__(self, p, configfilename, standard_sections):
+    def __init__(self, p):
         """Initialize instances of physical bodies.
         Read program parameters and properties of the bodies from config file.
         Initialize the circles in the animation (matplotlib patches)"""
@@ -19,12 +19,12 @@ class CurveSimBodies(list):
         g, au, r_sun, m_sun, l_sun = p.g, p.au, p.r_sun, p.m_sun, p.l_sun
         r_jup, m_jup, r_earth, m_earth, v_earth = p.r_jup, p.m_jup, p.r_earth, p.m_earth, p.v_earth
         config = configparser.ConfigParser(inline_comment_prefixes='#')
-        config.read(configfilename)  # Read config file. (Has been done moments before for reading the program parameters.)
+        config.read(p.configfilename)  # Read config file. (Has been done moments before for reading the program parameters.)
         super().__init__()  # create object by calling the constructor of class list
 
         # Physical bodies
         for section in config.sections():
-            if section not in standard_sections:  # This section must describe a physical object.
+            if section not in p.standard_sections:  # This section must describe a physical object.
                 self.append(CurveSimBody(p=p,
                                          name=section,
                                          body_type=config.get(section, "body_type"),
