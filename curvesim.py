@@ -30,7 +30,7 @@ def curvesim():
 
 
 if __name__ == '__main__':
-    parameters, bodies, lightcurve = curvesim()
-    print(parameters)
-    print(bodies)
-    CurveSimBodies.prettyprint_lightcurve(lightcurve)
+    parameters_, bodies_, lightcurve_ = curvesim()
+    print(parameters_)
+    print(bodies_)
+    CurveSimBodies.prettyprint_lightcurve(lightcurve_)
