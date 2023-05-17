@@ -1,5 +1,5 @@
 # curvesim
-Curvesim - A Star System Lightcurve Simulator<br>
+Curvesim - A Star System and Lightcurve Simulator<br>
 Curvesim calculates the movements and eclipses of celestial bodies and produces a video of this.<br>
 <br>
 Specify mass, radius and other properties of some stars and planets in a configuration file.<br>
