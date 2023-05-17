@@ -1,6 +1,6 @@
 # curvesim
 Curvesim - A Star System and Lightcurve Simulator<br>
-Curvesim calculates the movements and eclipses of celestial bodies and produces a video of this.<br>
+Curvesim calculates the movements and eclipses of celestial bodies and produces a video of this and of the resulting lightcurve.<br>
 <br>
 Specify mass, radius and other properties of some stars and planets in a configuration file.<br>
 Then run "curvesim.py <configfilename>" to produce the video.
