@@ -11,7 +11,8 @@ the lightcurve of the system's total luminosity over time.<br>
 Usually you do not need to look at or even modify the python code. Instead control the program's
 outcome with the config file. The meaning of all program parameters is documented in the config file.<br>
 <br>
-Curvesim uses ffmpeg to convert the data into a video. Download ffmpeg from https://www.ffmpeg.org/download.html. 
+Curvesim uses ffmpeg to convert the data into a video. <br> 
+Download ffmpeg from https://www.ffmpeg.org/download.html. 
 Extract the zip file and (on Windows) add "<yourdriveandpath>\FFmpeg\bin" to the environment variable PATH.<br>
 <br>
 For questions and comments just open an issue on https://github.com/lichtgestalter/curvesim/issues to get my attention :)<br>
