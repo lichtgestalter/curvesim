@@ -23,7 +23,8 @@ class TestSsls(TestCase):
         # automatically executed after every single test in this class
         pass
 
-    def does_not_do_anything(self):
+    @staticmethod
+    def does_not_do_anything():
         print("This will not be printed because the function does not start with \'test\'")
 
     def test_keplers_equation_0(self):

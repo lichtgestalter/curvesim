@@ -84,16 +84,15 @@ class CurveSimParameters:
             configfilename = sys.argv[1]
             print(f'Using {configfilename} as config file. Further program parameters are ignored.')
         config = configparser.ConfigParser(inline_comment_prefixes='#')  # Read config file.
-        Red = "\u001b[31m"
-        Reset = "\u001b[0m"
+        red = "\u001b[31m"
+        reset = "\u001b[0m"
         if len(config.read(configfilename)) < 1:  # does opening the config file fail?
-            print(Red + f'Config file {configfilename} not found. ' + Reset)
-            print(Red +  f'Provide the config file name as the program parameter if you do not want to use the config file {configfilename}. ' + Reset)
-            print(Red + f'If you run this script in a jupyter notebook, add this line to the script: sys.argv[1]="yourconfigfilename.ini"' + Reset)
+            print(red + f'Config file {configfilename} not found. ' + reset)
+            print(red + f'Provide the config file name as the program parameter if you do not want to use the config file {configfilename}. ' + reset)
+            print(red + f'If you run this script in a jupyter notebook, add this line to the script: sys.argv[1]="yourconfigfilename.ini"' + reset)
             exit(1)
         for section in standard_sections:  # Does the config file contain all standard sections?
             if section not in config.sections():
-                print(Red + f'Section {section} missing in config file.' + Reset)
+                print(red + f'Section {section} missing in config file.' + reset)
                 exit(2)
         return configfilename
-

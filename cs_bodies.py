@@ -8,6 +8,7 @@ import numpy as np
 from cs_body import CurveSimBody
 from cs_physics import CurveSimPhysics
 
+
 class CurveSimBodies(list):
 
     # noinspection PyUnusedLocal
@@ -135,19 +136,18 @@ class CurveSimBodies(list):
 
     def calc_patch_radii(self, p):
         """If autoscaling is on, this function calculates the radii of the circles (matplotlib patches) of the animation."""
-        radius_list = [body.radius for body in self]  # radii of all bodies
-        # print(f'{rlist=}')
-        log_list = [math.log10(i) for i in radius_list]  # log10 of all radii
-        # print(f'{log_list=}')
-        log_scaled_list = [i * p.min_radius / min(log_list) for i in log_list]  # scaled log10 lineary, so the smallest circle has the desired radius
-        # print(f'{min_ok=}')
-        exp_numerator = math.log10((p.max_radius - max(log_scaled_list)) / max(log_scaled_list))
-        exp_denominator = math.log10(max(log_list) - min(log_list))
-        # print(x, y, exponent)
-        radius_list = [i * (1 + (j - min(log_list)) ** (exp_numerator / exp_denominator)) for i, j in zip(log_scaled_list, log_list)]  # scaled log10 exponentially, so all circles have the desired radius
-        # print(f'{fertig=}')
-        for body, radius in zip(self, radius_list):
+        radii_in = [body.radius for body in self]  # radii of all bodies
+        logs = [math.log10(i) for i in radii_in]  # log10 of all radii
+        scaled_logs = [i * p.min_radius / min(logs) for i in logs]  # scaled log10 lineary, so smallest scaled log is now p.min_radius
+        max_factor = p.max_radius / max(scaled_logs)  # largest scaled_log will later be multiplied by max_factor in order to scale it to p.max_radius
+        deltas = [i - min(scaled_logs) for i in scaled_logs]
+        factors = [1 + (i - min(deltas)) / (max(deltas) - min(deltas)) * (max_factor - 1) for i in deltas]  # interpolate scaling factors
+        radii_out = [i * j for i, j in zip(scaled_logs, factors)]
+        print(f'patch radii:', end="  ")
+        for body, radius in zip(self, radii_out):
             body.patch_radius = radius
+            print(f'{body.name}: {body.patch_radius:.4f} ', end="   ")
+        print()
 
     def generate_patches(self, p):
         """Generates the circles (matplotlib patches) of the animation."""

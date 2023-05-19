@@ -58,10 +58,10 @@ class CurveSimBody:
         # Used for calculation of eclipsed area in function eclipsed_by.
         self.d, self.h, self.angle, self.eclipsed_area = 0.0, 0.0, 0.0, 0.0
 
-    # noinspection NonAsciiCharacters,PyPep8Naming,PyUnusedLocal
     def __repr__(self):
         return f'CurveSimBody: {self.name}'
 
+    # noinspection NonAsciiCharacters,PyPep8Naming,PyUnusedLocal
     def keplerian_elements_to_state_vectors(self):
         """Calculates the state vectors (position and velocity) from Keplerian Orbit Elements.
         Returns also true anomaly, eccentric anomaly, mean anomaly and the time of periapsis.
