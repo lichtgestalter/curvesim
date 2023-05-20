@@ -136,18 +136,13 @@ class CurveSimBodies(list):
 
     def calc_patch_radii(self, p):
         """If autoscaling is on, this function calculates the radii of the circles (matplotlib patches) of the animation."""
-        radii_in = [body.radius for body in self]  # radii of all bodies
-        logs = [math.log10(i) for i in radii_in]  # log10 of all radii
-        scaled_logs = [i * p.min_radius / min(logs) for i in logs]  # scaled log10 lineary, so smallest scaled log is now p.min_radius
-        max_factor = p.max_radius / max(scaled_logs)  # largest scaled_log will later be multiplied by max_factor in order to scale it to p.max_radius
-        deltas = [i - min(scaled_logs) for i in scaled_logs]
-        factors = [1 + (i - min(deltas)) / (max(deltas) - min(deltas)) * (max_factor - 1) for i in deltas]  # interpolate scaling factors
-        radii_out = [i * j for i, j in zip(scaled_logs, factors)]
-        print(f'patch radii:', end="  ")
+        logs = [math.log10(body.radius) for body in self]  # log10 of all radii
+        radii_out = [(p.max_radius - p.min_radius) * (i - min(logs)) / (max(logs) - min(logs)) + p.min_radius for i in logs]  # linear transformation to match the desired minmum and maximum radii
+        # print(f'patch radii:', end="  ")
         for body, radius in zip(self, radii_out):
             body.patch_radius = radius
-            print(f'{body.name}: {body.patch_radius:.4f} ', end="   ")
-        print()
+        #     print(f'{body.name}: {body.patch_radius:.4f} ', end="   ")
+        # print()
 
     def generate_patches(self, p):
         """Generates the circles (matplotlib patches) of the animation."""
