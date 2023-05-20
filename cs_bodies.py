@@ -6,6 +6,7 @@ import matplotlib.animation
 import numpy as np
 
 from cs_body import CurveSimBody
+from cs_lightcurve import CurveSimLightcurve
 from cs_physics import CurveSimPhysics
 
 
@@ -90,7 +91,7 @@ class CurveSimBodies(list):
         The resulting body positions and the lightcurve are stored for later use in the animation.
         Body motion calculations inspired by https://colab.research.google.com/drive/1YKjSs8_giaZVrUKDhWLnUAfebuLTC-A5."""
         stars = [body for body in self if body.body_type == "star"]
-        lightcurve = np.zeros(p.iterations)  # Initialize lightcurve.
+        lightcurve = CurveSimLightcurve(p.iterations)  # Initialize lightcurve (essentially a np.ndarray)
         lightcurve[0] = self.total_luminosity(stars, 0)
         for iteration in range(1, p.iterations):
             for body1 in self:
@@ -129,10 +130,6 @@ class CurveSimBodies(list):
         toc = time.perf_counter()
         print(f' {toc - tic:7.2f} seconds  ({p.iterations / (toc - tic):.0f} iterations/second)')
         return lightcurve
-
-    @staticmethod
-    def prettyprint_lightcurve(lightcurve):
-        print(f'{lightcurve.max()=}, {lightcurve.min()=}, {len(lightcurve)=}')
 
     def calc_patch_radii(self, p):
         """If autoscaling is on, this function calculates the radii of the circles (matplotlib patches) of the animation."""

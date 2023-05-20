@@ -33,4 +33,4 @@ if __name__ == '__main__':
     parameters_, bodies_, lightcurve_ = curvesim()
     # print(parameters_)
     print(bodies_)
-    CurveSimBodies.prettyprint_lightcurve(lightcurve_)
+    # print(lightcurve_)
