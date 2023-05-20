@@ -7,5 +7,5 @@ class CurveSimLightcurve(np.ndarray):
         return obj
 
     def __str__(self):
-        return f'CurveSimLightcurve: max={self.max():.5f}, min={self.min():.5f}, len={len(self)}'
+        return f'CurveSimLightcurve: max={self.max(initial=1.0):.5f}, min={self.min(initial=0.0):.5f}, len={len(self)}'
 
