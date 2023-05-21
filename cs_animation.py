@@ -99,10 +99,10 @@ class CurveSimAnimation:
         """Update patches. Send new circle positions to animation function.
         First parameter comes from iterator frames (a parameter of FuncAnimation).
         The other parameters are given to this function via the parameter fargs of FuncAnimation."""
-        for body in bodies:  # Top view: projection (x,y,z) -> (x,y), order = z
+        for body in bodies:  # Top view: projection (x,y,z) -> (x,y), order = z (z-axis points to viewer)
             body.circle_top.set(zorder=body.positions[frame * p.sampling_rate][2])
             body.circle_top.center = body.positions[frame * p.sampling_rate][0] / p.scope_top, body.positions[frame * p.sampling_rate][1] / p.scope_top
-        for body in bodies:  # Eclipse view: projection (x,y,z) -> (x,z), order = -y
+        for body in bodies:  # Eclipse view: projection (x,y,z) -> (x,z), order = -y (y-axis points away from viewer)
             body.circle_ecl.set(zorder=-body.positions[frame * p.sampling_rate][1])
             body.circle_ecl.center = body.positions[frame * p.sampling_rate][0] / p.scope_ecl, body.positions[frame * p.sampling_rate][2] / p.scope_ecl
         red_dot.center = p.dt * p.sampling_rate * frame / p.x_unit_value, lightcurve[frame * p.sampling_rate]

@@ -1,14 +1,17 @@
 next:
-    calc_patch_radii Bug!!!
-
-    Aus Kapitel 6 von Noras 3-Stern-System die Kepler-Parameter für TIC470710327_new.ini extrahieren.
+    Aus Kapitel 6.1 von Noras 3-Stern-System die Kepler-Parameter für TIC470710327_new.ini extrahieren.
     Video erzeugen, was hoffentlich dem ursprünglichen Video mit geschätzten Startpos/Startvelocity ähnelt.
-
-    Is radii the plural of radius?
 
 später:
     Limb darkening auf die anscheinend übliche Darstellung mit einem linearen Parameter und einem quadratischen Parameter umstellen.
     (Achtung, es gibt 2 Definitionen!)
+
+    Bei mir hat ein "waagerechter" Standard-Orbit die Inklination 0°. Bei Exoplaneten ist aber 90° üblich. Anpassen?
+        Referenz-Ebene steht bei Exoplaneten senkrecht zur Sichtlinie Erde->Exoplanet.
+        0° Inklination entspricht also meiner Top-View.
+        Entspricht 90° meiner Eclipse-View? Dann wäre ja alles gut?
+        https://de.wikipedia.org/wiki/Bahnneigung
+
 
     Orbit parameter input:
         Exoplaneten-Paper und -Datenbanken studieren: Welche Bahnparameter werden angegeben? Welche muss ich berechnen? Welche einfach festlegen?
