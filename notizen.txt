@@ -3,14 +3,14 @@ next:
     Video erzeugen, was hoffentlich dem ursprünglichen Video mit geschätzten Startpos/Startvelocity ähnelt.
 
 später:
-    Limb darkening auf die anscheinend übliche Darstellung mit einem linearen Parameter und einem quadratischen Parameter umstellen.
-    (Achtung, es gibt 2 Definitionen!)
-
     Bei mir hat ein "waagerechter" Standard-Orbit die Inklination 0°. Bei Exoplaneten ist aber 90° üblich. Anpassen?
         Referenz-Ebene steht bei Exoplaneten senkrecht zur Sichtlinie Erde->Exoplanet.
         0° Inklination entspricht also meiner Top-View.
         Entspricht 90° meiner Eclipse-View? Dann wäre ja alles gut?
         https://de.wikipedia.org/wiki/Bahnneigung
+
+    Limb darkening auf die anscheinend übliche Darstellung mit einem linearen Parameter und einem quadratischen Parameter umstellen.
+    (Achtung, es gibt 2 Definitionen!)
 
 
     Orbit parameter input:
@@ -24,16 +24,15 @@ später:
         x-axis of lightcurve in BJD (BJD https://en.wikipedia.org/wiki/Barycentric_Julian_Date and https://en.wikipedia.org/wiki/Barycentric_Dynamical_Time)
 
     Orbit parameter output:
-        keplerian_elements_to_state_vectors() soll berechnete Parameter in ein (neues) config file schreiben.
-
-        Nach Berechnung aller Positionen die Bahndaten auswerten:
-            Transit times: T1, T2, T3, T4, T14, Tt
-            Kepler-Orbit-Parameter
-            max/min of x, y, z position
-            Datenhaltung? [stars] x [bodies] x [aktueller Zustand, [(Ereignis, timestamp)]
+        Nach Berechnung aller Positionen die Bahndaten auswerten, in eine Datenstruktur und dann in ein JSON-File schreiben:
+            Transit times: T1, T2, T3, T4, T14, Tt -> orbiting period
+            Transit depths
             Track transit variations (changes in orbiting period).
-                Do they suggest hidden planets? Can I guess the hidden planets parameters? Very probably not.
-                How does an exomoon influence transit variation? Fun :)
+            max/min of x, y, z position?
+            Kepler-Orbit-Parameter (aus den simulierten Positionen errechnen?)
+            (((Datenhaltung? [stars] x [bodies] x [aktueller Zustand, [(Ereignis, timestamp)])))
+
+    How does an exomoon influence transit variation? Fun :)
 
     ?Was ist mit zu berechnenden state_vectors von Körpern, die nicht eclipsen? Also auch Omega und nu nicht 270° haben?
 
