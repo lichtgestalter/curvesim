@@ -3,6 +3,8 @@ A Star System and Lightcurve Simulator<br>
 <br>
 Curvesim produces a video of the movements and eclipses of celestial bodies and of the resulting lightcurve.<br>
 <br>
+Curvesim is fast and the videos use little disk space. A 30 seconds long video takes typically 40 seconds to produce and uses 0.2 MB disc space.<br>
+<br>
 Specify mass, radius, orbital elements and other properties of some stars and planets in a configuration file.<br>
 Then run "curvesim.py <configfilename>" to produce the video.
 The video shows simultanously a view of the star system from the top and from the side and
