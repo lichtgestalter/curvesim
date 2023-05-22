@@ -21,6 +21,7 @@ from cs_parameters import CurveSimParameters
 # import sys
 # sys.argv[1] = "provide_your_config_file_name_here.ini"
 
+
 def curvesim():
     parameters = CurveSimParameters()  # Read program parameters from config file.
     bodies = CurveSimBodies(parameters)  # Initialize the physical bodies, calculate their state vectors and generate their patches for the animation

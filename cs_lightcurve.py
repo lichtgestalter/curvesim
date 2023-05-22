@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class CurveSimLightcurve(np.ndarray):
 
     def __new__(cls, shape, dtype=float):
