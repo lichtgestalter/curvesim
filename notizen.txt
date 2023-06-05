@@ -1,6 +1,12 @@
 next:
     ecl in left, top in right umbenennen. Im Code und in allen ini-Files
     Beispielvideos zur Erklärung der Parameter machen
+        Left (neue Topview):
+            Periapsis 0° ist rechts von der Sonne, 90° hinter der Sonne
+        Right (neue Eclipseview):
+            Inclination 90°: Edgeview, 80°: ist Planet unterhalb und vor der Sonne, sowie oberhalb und hinter der Sonne.
+            Longitude of ascending node Ω 15°: Planet zieht von links unten nach rechts
+            oben vor der Sonne mit einer Steigung von 15° gegenüber der Horizontalen vorbei
 
     Aus Kapitel 6.1 von Noras 3-Stern-System die Kepler-Parameter für TIC470710327_new.ini extrahieren.
     Video erzeugen, was hoffentlich dem ursprünglichen Video mit geschätzten Startpos/Startvelocity ähnelt.
