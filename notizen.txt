@@ -1,4 +1,7 @@
 next:
+    ecl in left, top in right umbenennen. Im Code und in allen ini-Files
+    Beispielvideos zur Erklärung der Parameter machen
+
     Aus Kapitel 6.1 von Noras 3-Stern-System die Kepler-Parameter für TIC470710327_new.ini extrahieren.
     Video erzeugen, was hoffentlich dem ursprünglichen Video mit geschätzten Startpos/Startvelocity ähnelt.
 
