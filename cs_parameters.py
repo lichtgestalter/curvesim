@@ -36,12 +36,12 @@ class CurveSimParameters:
         self.iterations = self.frames * self.sampling_rate
 
         # [Scale]
-        self.scope_ecl = eval(config.get("Scale", "scope_ecl"))
-        self.star_scale_ecl = eval(config.get("Scale", "star_scale_ecl"))
-        self.planet_scale_ecl = eval(config.get("Scale", "planet_scale_ecl"))
-        self.scope_top = eval(config.get("Scale", "scope_top"))
-        self.star_scale_top = eval(config.get("Scale", "star_scale_top"))
-        self.planet_scale_top = eval(config.get("Scale", "planet_scale_top"))
+        self.scope_left = eval(config.get("Scale", "scope_left"))
+        self.star_scale_left = eval(config.get("Scale", "star_scale_left"))
+        self.planet_scale_left = eval(config.get("Scale", "planet_scale_left"))
+        self.scope_right = eval(config.get("Scale", "scope_right"))
+        self.star_scale_right = eval(config.get("Scale", "star_scale_right"))
+        self.planet_scale_right = eval(config.get("Scale", "planet_scale_right"))
         self.autoscaling = config.get("Scale", "autoscaling") == "on"
         self.min_radius = eval(config.get("Scale", "min_radius")) / 100.0
         self.max_radius = eval(config.get("Scale", "max_radius")) / 100.0

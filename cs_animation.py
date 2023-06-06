@@ -9,12 +9,12 @@ class CurveSimAnimation:
 
     def __init__(self, p, bodies, lightcurve):
         sampled_lightcurve = np.take(lightcurve, range(0, p.iterations, p.sampling_rate))  # Use only some of the calculated positions for the animation because it is so slow.
-        self.fig, ax_top, ax_eclipse, ax_lightcurve, self.red_dot = CurveSimAnimation.init_plot(p, sampled_lightcurve, lightcurve)  # Adjust constants in section [Plot] of config file to fit your screen.
+        self.fig, ax_right, ax_left, ax_lightcurve, self.red_dot = CurveSimAnimation.init_plot(p, sampled_lightcurve, lightcurve)  # Adjust constants in section [Plot] of config file to fit your screen.
         for body in bodies:  # Circles represent the bodies in the animation. Set their colors and add them to the matplotlib axis.
-            body.circle_top.set_color(body.color)
-            body.circle_ecl.set_color(body.color)
-            ax_top.add_patch(body.circle_top)
-            ax_eclipse.add_patch(body.circle_ecl)
+            body.circle_right.set_color(body.color)
+            body.circle_left.set_color(body.color)
+            ax_right.add_patch(body.circle_right)
+            ax_left.add_patch(body.circle_left)
         self.render(p, bodies, lightcurve)
 
     @staticmethod
@@ -35,29 +35,29 @@ class CurveSimAnimation:
     @staticmethod
     def init_plot(p, sampled_lightcurve, lightcurve):
         """Initialize the matplotlib figure containing 3 axis:
-        Eclipse view (top left): projection (x,y,z) -> (x,z), order = -y.
-        Top view (top right): projection (x,y,z) -> (x,y), order = z.
-        lightcurve (bottom)"""
+        Top left: projection (x,y,z) -> (x,z), order = -y.
+        Top right: projection (x,y,z) -> (x,y), order = z.
+        Bottom: lightcurve"""
         fig = plt.figure()
         fig.set_figwidth(p.figure_width)
         fig.set_figheight(p.figure_height)
-        fig.set_facecolor("black")  # background color outside of ax_eclipse and ax_lightcurve
+        fig.set_facecolor("black")  # background color outside of ax_left and ax_lightcurve
         buffer = 0
         fig.subplots_adjust(left=buffer, right=1.0 - buffer, bottom=buffer, top=1 - buffer)  # Positions of the subplots edges, as a fraction of the figure width.
 
-        ax_eclipse = plt.subplot2grid(shape=(5, 2), loc=(0, 0), rowspan=4, colspan=1)
-        ax_eclipse.set_xlim(-p.xlim, p.xlim)
-        ax_eclipse.set_ylim(-p.ylim, p.ylim)
-        ax_eclipse.set_aspect('equal')
-        ax_eclipse.set_facecolor("black")  # background color
-        # ax_eclipse.get_xaxis().set_visible(False)
-        # ax_eclipse.get_yaxis().set_visible(False)
+        ax_left = plt.subplot2grid(shape=(5, 2), loc=(0, 0), rowspan=4, colspan=1)
+        ax_left.set_xlim(-p.xlim, p.xlim)
+        ax_left.set_ylim(-p.ylim, p.ylim)
+        ax_left.set_aspect('equal')
+        ax_left.set_facecolor("black")  # background color
+        # ax_left.get_xaxis().set_visible(False)
+        # ax_left.get_yaxis().set_visible(False)
 
-        ax_top = plt.subplot2grid(shape=(5, 2), loc=(0, 1), rowspan=4, colspan=1)
-        ax_top.set_xlim(-p.xlim, p.xlim)
-        ax_top.set_ylim(-p.ylim, p.ylim)
-        ax_top.set_aspect('equal')
-        ax_top.set_facecolor("black")  # background color
+        ax_right = plt.subplot2grid(shape=(5, 2), loc=(0, 1), rowspan=4, colspan=1)
+        ax_right.set_xlim(-p.xlim, p.xlim)
+        ax_right.set_ylim(-p.ylim, p.ylim)
+        ax_right.set_aspect('equal')
+        ax_right.set_facecolor("black")  # background color
 
         ax_lightcurve = plt.subplot2grid(shape=(5, 1), loc=(4, 0), rowspan=1, colspan=1)
         ax_lightcurve.set_facecolor("black")  # background color
@@ -92,19 +92,19 @@ class CurveSimAnimation:
         red_dot.set_color((1, 0, 0))  # red
         ax_lightcurve.add_patch(red_dot)
         plt.tight_layout()  # Automatically adjust padding horizontally as well as vertically.
-        return fig, ax_top, ax_eclipse, ax_lightcurve, red_dot
+        return fig, ax_right, ax_left, ax_lightcurve, red_dot
 
     @staticmethod
     def next_frame(frame, p, bodies, red_dot, lightcurve):
         """Update patches. Send new circle positions to animation function.
         First parameter comes from iterator frames (a parameter of FuncAnimation).
         The other parameters are given to this function via the parameter fargs of FuncAnimation."""
-        for body in bodies:  # Top view: projection (x,y,z) -> (x,y), order = z (z-axis points to viewer)
-            body.circle_top.set(zorder=body.positions[frame * p.sampling_rate][2])
-            body.circle_top.center = body.positions[frame * p.sampling_rate][0] / p.scope_top, body.positions[frame * p.sampling_rate][1] / p.scope_top
-        for body in bodies:  # Eclipse view: projection (x,y,z) -> (x,z), order = -y (y-axis points away from viewer)
-            body.circle_ecl.set(zorder=-body.positions[frame * p.sampling_rate][1])
-            body.circle_ecl.center = body.positions[frame * p.sampling_rate][0] / p.scope_ecl, body.positions[frame * p.sampling_rate][2] / p.scope_ecl
+        for body in bodies:  # right view: projection (x,y,z) -> (x,y), order = z (z-axis points to viewer)
+            body.circle_right.set(zorder=body.positions[frame * p.sampling_rate][2])
+            body.circle_right.center = body.positions[frame * p.sampling_rate][0] / p.scope_right, body.positions[frame * p.sampling_rate][1] / p.scope_right
+        for body in bodies:  # left view: projection (x,y,z) -> (x,z), order = -y (y-axis points away from viewer)
+            body.circle_left.set(zorder=-body.positions[frame * p.sampling_rate][1])
+            body.circle_left.center = body.positions[frame * p.sampling_rate][0] / p.scope_left, body.positions[frame * p.sampling_rate][2] / p.scope_left
         red_dot.center = p.dt * p.sampling_rate * frame / p.x_unit_value, lightcurve[frame * p.sampling_rate]
         if frame >= 10 and frame % int(round(p.frames / 10)) == 0:  # Inform user about program's progress.
             print(f'{round(frame / p.frames * 10) * 10:3d}% ', end="")

@@ -146,13 +146,13 @@ class CurveSimBodies(list):
         if p.autoscaling:
             self.calc_patch_radii(p)
             for body in self:
-                body.circle_top = matplotlib.patches.Circle(xy=(0, 0), radius=body.patch_radius)  # Matplotlib patch for top view
-                body.circle_ecl = matplotlib.patches.Circle(xy=(0, 0), radius=body.patch_radius)  # Matplotlib patch for eclipsed view
+                body.circle_right = matplotlib.patches.Circle(xy=(0, 0), radius=body.patch_radius)  # Matplotlib patch for right view
+                body.circle_left = matplotlib.patches.Circle(xy=(0, 0), radius=body.patch_radius)  # Matplotlib patch for left view
         else:
             for body in self:
                 if body.body_type == "planet":
-                    extrascale_ecl, extrascale_top = p.planet_scale_ecl, p.planet_scale_top  # Scale radius in plot.
+                    extrascale_left, extrascale_right = p.planet_scale_left, p.planet_scale_right  # Scale radius in plot.
                 else:
-                    extrascale_ecl, extrascale_top = p.star_scale_ecl, p.star_scale_top  # It's a star. Scale radius in plot accordingly.
-                body.circle_top = matplotlib.patches.Circle((0, 0), radius=body.radius * extrascale_top / p.scope_top)  # Matplotlib patch for top view
-                body.circle_ecl = matplotlib.patches.Circle((0, 0), radius=body.radius * extrascale_ecl / p.scope_ecl)  # Matplotlib patch for eclipsed view
+                    extrascale_left, extrascale_right = p.star_scale_left, p.star_scale_right  # It's a star. Scale radius in plot accordingly.
+                body.circle_right = matplotlib.patches.Circle((0, 0), radius=body.radius * extrascale_right / p.scope_right)  # Matplotlib patch for right view
+                body.circle_left = matplotlib.patches.Circle((0, 0), radius=body.radius * extrascale_left / p.scope_left)  # Matplotlib patch for left view
