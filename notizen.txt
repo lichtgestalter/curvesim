@@ -1,6 +1,6 @@
 next:
-    ecl in left, top in right umbenennen. Im Code und in allen ini-Files
-    Beispielvideos zur Erklärung der Parameter machen
+
+    Beispielvideos zur Erklärung der Parameter machen (oder geogebra nutzen)
         Left (neue Topview):
             ϖ (longitude of periapsis) 0° ist rechts von der Sonne, 90° hinter der Sonne
         Right (neue Eclipseview):

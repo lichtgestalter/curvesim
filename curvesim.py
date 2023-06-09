@@ -30,8 +30,15 @@ def curvesim():
     return parameters, bodies, lightcurve
 
 
+def print_5_points():
+    parameters = CurveSimParameters()  # Read program parameters from config file.
+    bodies = CurveSimBodies(parameters)  # Initialize the physical bodies, calculate their state vectors and generate their patches for the animation
+    print(f'(L{bodies[1].L:%3.2f} {bodies[1].positions[0][0]}, {bodies[1].positions[0][1]}, {bodies[1].positions[0][2]})')
+    return parameters, bodies
+
 if __name__ == '__main__':
-    parameters_, bodies_, lightcurve_ = curvesim()
+    # parameters_, bodies_, lightcurve_ = curvesim()
+    parameters_, bodies_ = print_5_points()
     # print(parameters_)
     print(bodies_)
     # print(lightcurve_)
