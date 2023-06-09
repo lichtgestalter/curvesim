@@ -12,6 +12,7 @@
 #
 # Your questions and comments are welcome.
 # Just open an issue on https://github.com/lichtgestalter/curvesim/issues to get my attention :)
+import math
 
 from cs_animation import CurveSimAnimation
 from cs_bodies import CurveSimBodies
@@ -33,8 +34,17 @@ def curvesim():
 def print_5_points():
     parameters = CurveSimParameters()  # Read program parameters from config file.
     bodies = CurveSimBodies(parameters)  # Initialize the physical bodies, calculate their state vectors and generate their patches for the animation
-    print(f'(L{bodies[1].L:%3.2f} {bodies[1].positions[0][0]}, {bodies[1].positions[0][1]}, {bodies[1].positions[0][2]})')
+    bodies[1].positions[0] /= 1000000000.0
+    myfile = "five_points.txt"
+    with open(myfile, "a") as file:
+        if not bodies[1].L:
+            file.write(f'e={bodies[1].e:.2f} i={bodies[1].i / math.pi * 180:.0f} Omega={bodies[1].Ω / math.pi * 180:.0f} kleinomegaquer={bodies[1].ϖ / math.pi * 180:.0f}\n')
+        file.write(f'L{bodies[1].L / math.pi * 180:.0f} = ({bodies[1].positions[0][0]:.2f}, {bodies[1].positions[0][1]:.2f}, {bodies[1].positions[0][2]:.2f})\n')
+
+    # print(f'e={bodies[1].e:.2f} i={bodies[1].i / math.pi * 180:.0f} Ω={bodies[1].Ω / math.pi * 180:.0f} ϖ={bodies[1].ϖ / math.pi * 180:.0f}')
+    # print(f'L{bodies[1].L / math.pi * 180:.0f} = ({bodies[1].positions[0][0]:.0f}, {bodies[1].positions[0][1]:.0f}, {bodies[1].positions[0][2]:.0f})')
     return parameters, bodies
+
 
 if __name__ == '__main__':
     # parameters_, bodies_, lightcurve_ = curvesim()
