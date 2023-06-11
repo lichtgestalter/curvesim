@@ -10,6 +10,8 @@ def keplerian_elements_to_start_position(a, e, i, Ω, ω, nu):
     return np.array([x, y, z])
 
 
+
+
 ea = 2 * atand(sqrt((1 - ee) / (1 + ee)) * tan(nu / 2))
 r = a * (1 - ee * cos(ea))
 xx = r * (cos(OM) * cos(om + nu) - sin(OM) * sin(om + nu) * cos(ii))
