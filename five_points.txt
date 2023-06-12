@@ -1,4 +1,4 @@
-left view: projection (x,y,z) -> (x,z), order = -y (y-axis points away from viewer)
+left view: projection (x,y,z) -> (x,z), order = -y (minus y-axis points to viewer)
 right view: projection (x,y,z) -> (x,y), order = z (z-axis points to viewer)
 
 
