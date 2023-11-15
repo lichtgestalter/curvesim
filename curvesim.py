@@ -47,8 +47,8 @@ def print_5_points():
 
 
 if __name__ == '__main__':
-    # parameters_, bodies_, lightcurve_ = curvesim()
-    parameters_, bodies_ = print_5_points()
+    parameters_, bodies_, lightcurve_ = curvesim()
+    # parameters_, bodies_ = print_5_points()
     # print(parameters_)
     print(bodies_)
     # print(lightcurve_)
