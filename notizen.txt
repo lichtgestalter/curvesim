@@ -1,4 +1,5 @@
 next:
+    Fuer nichttriviale Orbits liegt die Ellipse in Geogebra anders als in curvesim!!! Bug in meinen Keplerformeln? Experten fragen!
 
     Beispielvideos zur Erklärung der Parameter machen (oder geogebra nutzen)
         Left (neue Topview):
