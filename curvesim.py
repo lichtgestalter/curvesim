@@ -33,6 +33,8 @@ def curvesim():
 
 def print_5_points():
     # Just for debugging purposes, because something in the initial state vector is wrong.
+    # Generates 5 points per orbit.
+    # Creates a file whose content can be used in geogebra.org vor visualization. (manually - not automized yet)
     parameters = CurveSimParameters()  # Read program parameters from config file.
     bodies = CurveSimBodies(parameters)  # Initialize the physical bodies, calculate their state vectors and generate their patches for the animation
     bodies[1].positions[0] /= 1000000000.0

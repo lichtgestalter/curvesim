@@ -25,3 +25,5 @@ e=0.70 i=90 Omega=10 kleinomegaquer=0
 L0 = (66.16, 11.67, -11.85)
 e=0.70 i=90 Omega=10 kleinomegaquer=0
 L0 = (66.16, 11.67, -11.85)
+e=0.70 i=90 Omega=10 kleinomegaquer=0
+L0 = (66.16, 11.67, -11.85)
