@@ -32,6 +32,7 @@ def curvesim():
 
 
 def print_5_points():
+    # Just for debugging purposes, because something in the initial state vector is wrong.
     parameters = CurveSimParameters()  # Read program parameters from config file.
     bodies = CurveSimBodies(parameters)  # Initialize the physical bodies, calculate their state vectors and generate their patches for the animation
     bodies[1].positions[0] /= 1000000000.0
@@ -46,9 +47,13 @@ def print_5_points():
     return parameters, bodies
 
 
-if __name__ == '__main__':
-    # parameters_, bodies_, lightcurve_ = curvesim()
-    parameters_, bodies_ = print_5_points()
-    # print(parameters_)
+def main():
+    parameters_, bodies_, lightcurve_ = curvesim()
+    # parameters_, bodies_ = print_5_points()
+    print(parameters_)
     print(bodies_)
-    # print(lightcurve_)
+    print(lightcurve_)
+
+
+if __name__ == '__main__':
+    main()
