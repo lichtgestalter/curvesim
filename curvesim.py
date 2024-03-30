@@ -50,11 +50,11 @@ def print_5_points():
 
 
 def main():
-    parameters_, bodies_, lightcurve_ = curvesim()
-    # parameters_, bodies_ = print_5_points()
-    print(parameters_)
-    print(bodies_)
-    print(lightcurve_)
+    parameters, bodies, lightcurve = curvesim()
+    # parameters, bodies = print_5_points()
+    print(parameters)
+    print(bodies)
+    print(lightcurve)
 
 
 if __name__ == '__main__':
