@@ -34,27 +34,25 @@ def curvesim():
 def print_5_points():
     # Just for debugging purposes, because something in the initial state vector is wrong.
     # Generates 5 points per orbit.
-    # Creates a file whose content can be used in geogebra.org vor visualization. (manually - not automized yet)
+    # Creates a file whose content can be used in geogebra.org for visualization. (manually - not automized yet)
     parameters = CurveSimParameters()  # Read program parameters from config file.
     bodies = CurveSimBodies(parameters)  # Initialize the physical bodies, calculate their state vectors and generate their patches for the animation
     bodies[1].positions[0] /= 1000000000.0
     myfile = "five_points.txt"
     with open(myfile, "a") as file:
-        if not bodies[1].L:
+        if not bodies[1].L:  # L != 0 ?
             file.write(f'e={bodies[1].e:.2f} i={bodies[1].i / math.pi * 180:.0f} Omega={bodies[1].Ω / math.pi * 180:.0f} kleinomegaquer={bodies[1].ϖ / math.pi * 180:.0f}\n')
         file.write(f'L{bodies[1].L / math.pi * 180:.0f} = ({bodies[1].positions[0][0]:.2f}, {bodies[1].positions[0][1]:.2f}, {bodies[1].positions[0][2]:.2f})\n')
 
-    # print(f'e={bodies[1].e:.2f} i={bodies[1].i / math.pi * 180:.0f} Ω={bodies[1].Ω / math.pi * 180:.0f} ϖ={bodies[1].ϖ / math.pi * 180:.0f}')
-    # print(f'L{bodies[1].L / math.pi * 180:.0f} = ({bodies[1].positions[0][0]:.0f}, {bodies[1].positions[0][1]:.0f}, {bodies[1].positions[0][2]:.0f})')
     return parameters, bodies
 
 
 def main():
-    parameters, bodies, lightcurve = curvesim()
-    # parameters, bodies = print_5_points()
+    # parameters, bodies, lightcurve = curvesim()
+    parameters, bodies = print_5_points()
     print(parameters)
     print(bodies)
-    print(lightcurve)
+    # print(lightcurve)
 
 
 if __name__ == '__main__':

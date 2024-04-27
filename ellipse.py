@@ -1,3 +1,5 @@
+# diese Datei habe ich wohl auf der Fehlersuche angelegt. Weiss nicht mehr wieso.
+
 import math
 import numpy as np
 
@@ -12,10 +14,10 @@ def keplerian_elements_to_start_position(a, e, i, Ω, ω, nu):
 
 
 
-ea = 2 * atand(sqrt((1 - ee) / (1 + ee)) * tan(nu / 2))
-r = a * (1 - ee * cos(ea))
-xx = r * (cos(OM) * cos(om + nu) - sin(OM) * sin(om + nu) * cos(ii))
-yy = r * (sin(OM) * cos(om + nu) + cos(OM) * sin(om + nu) * cos(ii))
-zz = r * (sin(ii) * sin(om + nu))
+# ea = 2 * atand(sqrt((1 - ee) / (1 + ee)) * tan(nu / 2))
+# r = a * (1 - ee * cos(ea))
+# xx = r * (cos(OM) * cos(om + nu) - sin(OM) * sin(om + nu) * cos(ii))
+# yy = r * (sin(OM) * cos(om + nu) + cos(OM) * sin(om + nu) * cos(ii))
+# zz = r * (sin(ii) * sin(om + nu))
 
 
