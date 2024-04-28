@@ -31,7 +31,7 @@ def curvesim():
     return parameters, bodies, lightcurve
 
 
-def print_5_points():
+def print_a_point():
     # Just for debugging purposes, because something in the initial state vector is wrong.
     # Generates 5 points per orbit.
     # Creates a file whose content can be used in geogebra.org for visualization. (manually - not automized yet)
@@ -49,7 +49,7 @@ def print_5_points():
 
 def main():
     # parameters, bodies, lightcurve = curvesim()
-    parameters, bodies = print_5_points()
+    parameters, bodies = print_a_point()
     print(parameters)
     print(bodies)
     # print(lightcurve)
