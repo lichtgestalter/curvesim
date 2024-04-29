@@ -33,16 +33,16 @@ def curvesim():
 
 def print_a_point():
     # Just for debugging purposes, because something in the initial state vector is wrong.
-    # Generates 5 points per orbit.
     # Creates a file whose content can be used in geogebra.org for visualization. (manually - not automized yet)
     parameters = CurveSimParameters()  # Read program parameters from config file.
-    bodies = CurveSimBodies(parameters)  # Initialize the physical bodies, calculate their state vectors and generate their patches for the animation
-    bodies[1].positions[0] /= 1000000000.0
-    myfile = "five_points.txt"
-    with open(myfile, "a") as file:
-        if bodies[1].L == 0:
-            file.write(f'e={bodies[1].e:.2f} i={bodies[1].i / math.pi * 180:.0f} Omega={bodies[1].Ω / math.pi * 180:.0f} kleinomegaquer={bodies[1].ϖ / math.pi * 180:.0f}\n')
-        file.write(f'L{bodies[1].L / math.pi * 180:.0f} = ({bodies[1].positions[0][0]:.2f}, {bodies[1].positions[0][1]:.2f}, {bodies[1].positions[0][2]:.2f})\n')
+    for _L in parameters.debug_L:
+        bodies = CurveSimBodies(parameters, debug_L=_L)  # Initialize the physical bodies, calculate their state vectors and generate their patches for the animation
+        bodies[1].positions[0] /= 1000000000.0
+        myfile = "five_points.txt"
+        with open(myfile, "a") as file:
+            if bodies[1].L == 0:
+                file.write(f'e={bodies[1].e:.2f} i={bodies[1].i / math.pi * 180:.0f} Omega={bodies[1].Ω / math.pi * 180:.0f} kleinomegaquer={bodies[1].ϖ / math.pi * 180:.0f}\n')
+            file.write(f'L{bodies[1].L / math.pi * 180:.0f} = ({bodies[1].positions[0][0]:.2f}, {bodies[1].positions[0][1]:.2f}, {bodies[1].positions[0][2]:.2f})\n')
 
     return parameters, bodies
 

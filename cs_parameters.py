@@ -7,7 +7,7 @@ class CurveSimParameters:
     def __init__(self):
         """Read program parameters and properties of the physical bodies from config file."""
         # Read config file
-        self.standard_sections = ["Astronomical Constants", "Video", "Plot", "Scale"]
+        self.standard_sections = ["Astronomical Constants", "Video", "Plot", "Scale", "Debug"]
         config = configparser.ConfigParser(inline_comment_prefixes='#')
         self.configfilename = CurveSimParameters.find_and_check_config_file(default="curvesim.ini", standard_sections=self.standard_sections)
         config.read(self.configfilename)
@@ -64,6 +64,10 @@ class CurveSimParameters:
                 if getattr(self, key) <= 0:
                     print(f'{self=}   {key=}   {getattr(self, key)=}    {type(getattr(self, key))=}')
                     raise Exception(f"No parameter in sections {self.standard_sections} may be zero or negative.")
+
+        # [Debug]
+        self.debug_L = list(eval(config.get("Debug", "debug_L")))
+        # print(f'{self.debug_L=}, {type(self.debug_L)=}')
 
     def __repr__(self):
         return f'CurveSimParameters from {self.configfilename}'

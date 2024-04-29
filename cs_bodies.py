@@ -13,7 +13,7 @@ from cs_physics import CurveSimPhysics
 class CurveSimBodies(list):
 
     # noinspection PyUnusedLocal
-    def __init__(self, p):
+    def __init__(self, p, debug_L=-1):
         """Initialize instances of physical bodies.
         Read program parameters and properties of the bodies from config file.
         Initialize the circles in the animation (matplotlib patches)"""
@@ -64,6 +64,8 @@ class CurveSimBodies(list):
             for c in body.color:
                 if c < 0 or c > 1:
                     raise Exception(f'{body.name} has invalid color value {c}.')
+            if debug_L >= 0 and body.name == "Test":
+                body.L = debug_L/180.0 * math.pi
             body.calc_state_vectors(p, self)
         self.generate_patches(p)
 
