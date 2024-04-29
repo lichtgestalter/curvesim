@@ -40,7 +40,7 @@ def print_a_point():
     bodies[1].positions[0] /= 1000000000.0
     myfile = "five_points.txt"
     with open(myfile, "a") as file:
-        if not bodies[1].L:  # L != 0 ?
+        if bodies[1].L == 0:
             file.write(f'e={bodies[1].e:.2f} i={bodies[1].i / math.pi * 180:.0f} Omega={bodies[1].Ω / math.pi * 180:.0f} kleinomegaquer={bodies[1].ϖ / math.pi * 180:.0f}\n')
         file.write(f'L{bodies[1].L / math.pi * 180:.0f} = ({bodies[1].positions[0][0]:.2f}, {bodies[1].positions[0][1]:.2f}, {bodies[1].positions[0][2]:.2f})\n')
 
