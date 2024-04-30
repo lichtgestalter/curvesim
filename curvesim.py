@@ -25,23 +25,24 @@ from cs_parameters import CurveSimParameters
 
 def curvesim():
     parameters = CurveSimParameters()  # Read program parameters from config file.
-    bodies = CurveSimBodies(parameters)  # Initialize the physical bodies, calculate their state vectors and generate their patches for the animation
+    bodies = CurveSimBodies(parameters)  # Read physical bodies from config file and initialize them, calculate their state vectors and generate their patches for the animation
     lightcurve = bodies.calc_physics(parameters)  # Calculate body positions and the resulting lightcurve.
     CurveSimAnimation(parameters, bodies, lightcurve)  # Create the video
     return parameters, bodies, lightcurve
 
 
-def print_a_point():
+def debug_print_points():
     # Just for debugging purposes, because something in the initial state vector is wrong.
     # Creates a file whose content can be used in geogebra.org for visualization. (manually - not automized yet)
     parameters = CurveSimParameters()  # Read program parameters from config file.
     for _L in parameters.debug_L:
         bodies = CurveSimBodies(parameters, debug_L=_L)  # Initialize the physical bodies, calculate their state vectors and generate their patches for the animation
-        bodies[1].positions[0] /= 1000000000.0
-        myfile = "five_points.txt"
+        bodies[1].positions[0] /= 2273900000.0
+        bodies[1].a /= 2273900000.0
+        myfile = "debug_file.txt"
         with open(myfile, "a") as file:
             if bodies[1].L == 0:
-                file.write(f'e={bodies[1].e:.2f} i={bodies[1].i / math.pi * 180:.0f} Omega={bodies[1].Ω / math.pi * 180:.0f} kleinomegaquer={bodies[1].ϖ / math.pi * 180:.0f}\n')
+                file.write(f'a={bodies[1].a:.0f} e={bodies[1].e:.2f} i={bodies[1].i / math.pi * 180:.0f} O={bodies[1].Ω / math.pi * 180:.0f} koq={bodies[1].ϖ / math.pi * 180:.0f}\n')
             file.write(f'L{bodies[1].L / math.pi * 180:.0f} = ({bodies[1].positions[0][0]:.2f}, {bodies[1].positions[0][1]:.2f}, {bodies[1].positions[0][2]:.2f})\n')
 
     return parameters, bodies
@@ -49,7 +50,7 @@ def print_a_point():
 
 def main():
     # parameters, bodies, lightcurve = curvesim()
-    parameters, bodies = print_a_point()
+    parameters, bodies = debug_print_points()
     print(parameters)
     print(bodies)
     # print(lightcurve)

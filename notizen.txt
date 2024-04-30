@@ -18,6 +18,7 @@ später:
         0° Inklination entspricht also meiner Top-View.
         Entspricht 90° meiner Eclipse-View? Dann wäre ja alles gut?
         https://de.wikipedia.org/wiki/Bahnneigung
+        [IST ERLEDIGT, GLAUBE ICH]
 
     Limb darkening auf die anscheinend übliche Darstellung mit einem linearen Parameter und einem quadratischen Parameter umstellen.
     (Achtung, es gibt 2 Definitionen!)
@@ -49,6 +50,7 @@ später:
     Model variable stars:
         Parameter für regelmäßige Helligkeitsänderungen: variation = [(amplitude, periode, phase(shift?))]
         Das deckt auch Sunspots ab. Die wären sonst zu beschwerlich.
+        Evtl. ermoeglichen, als Parameter den Namen einer Funktion anzugeben, die die Helligkeit des Sterns abhaengig vom Zeitpunkt (in BJD?) berechnet.
 
     Multiple Eclipses (e.g. Triply Eclipsing Triples, >=3 bodies in line of sight):
         Handle them correctly
