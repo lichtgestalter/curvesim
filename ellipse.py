@@ -1,17 +1,16 @@
 import matplotlib.pyplot as plt
 
 myfile = "debug_file.txt"
-with open(myfile) as file:
+with open(myfile, encoding='utf-8') as file:
     lines = file.readlines()
 for line in lines:
-    if "a=" in line and "kleinomegaquer" in line:
+    if line[0] == "a":
         print(f"{line.strip()=}")
         continue
-    while " = (" in line:
+    if line[0] == "L" :
         print(f"L  {line.strip()=}")
 print()
 exit(1)
-
 
 # Define the points
 L0 = (96.98, 17.10, -17.36)

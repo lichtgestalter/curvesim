@@ -40,10 +40,10 @@ def debug_print_points():
         bodies[1].positions[0] /= 2273900000.0
         bodies[1].a /= 2273900000.0
         myfile = "debug_file.txt"
-        with open(myfile, "a") as file:
+        with open(myfile, "a", encoding='utf-8') as file:
             if bodies[1].L == 0:
-                file.write(f'a={bodies[1].a:.0f} e={bodies[1].e:.2f} i={bodies[1].i / math.pi * 180:.0f} O={bodies[1].Ω / math.pi * 180:.0f} koq={bodies[1].ϖ / math.pi * 180:.0f}\n')
-            file.write(f'L{bodies[1].L / math.pi * 180:.0f} = ({bodies[1].positions[0][0]:.2f}, {bodies[1].positions[0][1]:.2f}, {bodies[1].positions[0][2]:.2f})\n')
+                file.write(f'a={bodies[1].a:.0f} e={bodies[1].e:.2f} i={bodies[1].i / math.pi * 180:.0f} Ω={bodies[1].Ω / math.pi * 180:.0f} ϖ={bodies[1].ϖ / math.pi * 180:.0f}\n')
+            file.write(f'L{bodies[1].L / math.pi * 180:.0f},{bodies[1].positions[0][0]:.2f},{bodies[1].positions[0][1]:.2f},{bodies[1].positions[0][2]:.2f}\n')
 
     return parameters, bodies
 
