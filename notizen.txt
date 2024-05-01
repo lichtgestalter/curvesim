@@ -1,7 +1,17 @@
+left view (top view when i=90°):   projection (x,y,z) -> (x,z), order = -y (minus y-axis points to viewer)
+right view (edge view when i=90°): projection (x,y,z) -> (x,y), order =  z       (z-axis points to viewer)
+
 next:
-    Fuer nichttriviale Orbits liegt die Ellipse in Geogebra anders als in curvesim!!! Bug in meinen Keplerformeln? Experten fragen!
+    Fuer nichttriviale Orbits (z.B. i=90, ϖ=0, aber Ω!=0) liegt die Ellipse anders als in https://orbitalmechanics.info/ (oder auch Geogebra?) !!!
+    Die Form der Ellipse ist aber wohl korrekt.
+    Ich habe keplerian_elements_to_state_vectors() zu keplerian_elements_to_state_vectors_debug() vereinfacht. Hier muss ein Fehler sein!
+
+
+
 
     Beispielvideos zur Erklärung der Parameter machen (oder geogebra nutzen)
+        Folgende Erklaerungen sind vermutlich fehlerhaft.
+        Vergleiche mit https://orbitalmechanics.info/
         Left (neue Topview):
             ϖ (longitude of periapsis) 0° ist rechts von der Sonne, 90° hinter der Sonne
         Right (neue Eclipseview):

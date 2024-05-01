@@ -33,7 +33,6 @@ def curvesim():
 
 def debug_print_points():
     # Just for debugging purposes, because something in the initial state vector is wrong.
-    # Creates a file whose content can be used in geogebra.org for visualization. (manually - not automized yet)
     parameters = CurveSimParameters()  # Read program parameters from config file.
     for _L in parameters.debug_L:
         bodies = CurveSimBodies(parameters, debug_L=_L)  # Initialize the physical bodies, calculate their state vectors and generate their patches for the animation

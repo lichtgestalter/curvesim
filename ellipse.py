@@ -1,72 +1,71 @@
+"""
+Visualisiert die Punkte aus debug_file.txt.
+Dieses enthält fuer jeden Satz Kepler-Parameter (a, e, i, Ω, ϖ) fuer verschiedene L (Startpunkte auf der Ellipse), den Startpunkt des Orbits.
+Bereits hier zeigt sich ein Fehler in der Ellipsenlage fuer Ω > 0 Grad.
+Das bedeutet, der Bug wirkt sich bereits auf den Startpunkt aus, also auf die ersten 3 Parameter des State Vector.
+"""
+
 import matplotlib.pyplot as plt
 
 myfile = "debug_file.txt"
 with open(myfile, encoding='utf-8') as file:
     lines = file.readlines()
+x_lists = []
+y_lists = []
+z_lists = []
+params_list = []
 for line in lines:
-    if line[0] == "a":
-        print(f"{line.strip()=}")
-        continue
-    if line[0] == "L" :
-        print(f"L  {line.strip()=}")
-print()
-exit(1)
+    if line[0] == "a":  # header line
+        params = line.strip()
+        params_list.append(params)
+        x_list = []
+        y_list = []
+        z_list = []
+        x_lists.append(x_list)
+        y_lists.append(y_list)
+        z_lists.append(z_list)
+    elif line[0] == "L":  # point line
+        x, y, z = [float(i) for i in line.strip().split(",")[1:]]  # [1:] because the first value is the Label
+        x_list.append(x)
+        y_list.append(y)
+        z_list.append(z)
+        # print(f"{x=} {y=} {z=} ")
 
-# Define the points
-L0 = (96.98, 17.10, -17.36)
-L22 = (96.15, 16.95, 21.64)
-L45 = (80.67, 14.22, 57.36)
-L90 = (17.10, 3.02, 98.48)
-L135 = (-56.49, -9.96, 81.91)
-L180 = (-96.98, -17.10, 17.36)
-L225 = (-80.67, -14.22, -57.36)
-L270 = (-17.10, -3.02, -98.48)
-L315 = (56.49, 9.96, -81.91)
+for x_list, y_list, z_list, params in zip(x_lists, y_lists, z_lists, params_list):
+    # x_list.append(x_list[0])  # close the loop
+    # y_list.append(y_list[0])
+    # z_list.append(z_list[0])
+    fig, axs = plt.subplots(1, 2, figsize=(12, 6))
 
-# Create the plot
-fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+    axs[0].scatter(x_list, z_list, color='green')
+    axs[0].plot(x_list, z_list, color='grey')
+    axs[0].set_title(f"Top view, {params}")
+    axs[0].set_xlabel('x')
+    axs[0].set_ylabel('z')
 
-# Left plot
-axs[0].scatter([L0[0], L22[0], L45[0], L90[0], L135[0], L180[0], L225[0], L270[0], L315[0]],
-               [L0[2], L22[2], L45[2], L90[2], L135[2], L180[2], L225[2], L270[2], L315[2]], color='green')
+    axs[0].set_facecolor('black')
+    axs[0].grid(False)
+    axs[0].spines['bottom'].set_color('grey')
+    axs[0].spines['top'].set_color('grey')
+    axs[0].spines['left'].set_color('grey')
+    axs[0].spines['right'].set_color('grey')
+    axs[0].set_xlim(-200, 200)
+    axs[0].set_ylim(-200, 200)
 
-axs[0].plot([L0[0], L22[0], L45[0], L90[0], L135[0], L180[0], L225[0], L270[0], L315[0], L0[0]],
-            [L0[2], L22[2], L45[2], L90[2], L135[2], L180[2], L225[2], L270[2], L315[2], L0[2]], color='grey')
+    axs[1].scatter(x_list, y_list, color='green')
+    axs[1].plot(x_list, y_list, color='grey')
+    axs[1].set_title(f"Edge view, {params}")
+    axs[1].set_xlabel('x')
+    axs[1].set_ylabel('y')
+    axs[1].set_facecolor('black')
+    axs[1].grid(False)
+    axs[1].spines['bottom'].set_color('grey')
+    axs[1].spines['top'].set_color('grey')
+    axs[1].spines['left'].set_color('grey')
+    axs[1].spines['right'].set_color('grey')
+    axs[1].set_xlim(-200, 200)
+    axs[1].set_ylim(-200, 200)
 
-axs[0].set_title('left/top a=100 e=0.00 i=90 O=10 koq=0')
-axs[0].set_xlabel('x')
-axs[0].set_ylabel('z')
-axs[0].set_facecolor('black')
-axs[0].grid(False)
-axs[0].spines['bottom'].set_color('grey')
-axs[0].spines['top'].set_color('grey')
-axs[0].spines['left'].set_color('grey')
-axs[0].spines['right'].set_color('grey')
-
-# Right plot
-axs[1].scatter([L0[0], L22[0], L45[0], L90[0], L135[0], L180[0], L225[0], L270[0], L315[0]],
-               [L0[1], L22[1], L45[1], L90[1], L135[1], L180[1], L225[1], L270[1], L315[1]], color='green')
-
-axs[1].plot([L0[0], L22[0], L45[0], L90[0], L135[0], L180[0], L225[0], L270[0], L315[0], L0[0]],
-            [L0[1], L22[1], L45[1], L90[1], L135[1], L180[1], L225[1], L270[1], L315[1], L0[1]], color='grey')
-
-axs[1].set_title('right/edge a=100 e=0.00 i=90 O=10 koq=0')
-axs[1].set_xlabel('x')
-axs[1].set_ylabel('y')
-axs[1].set_facecolor('black')
-axs[1].grid(False)
-axs[1].spines['bottom'].set_color('grey')
-axs[1].spines['top'].set_color('grey')
-axs[1].spines['left'].set_color('grey')
-axs[1].spines['right'].set_color('grey')
-
-axs[0].set_xlim(-200, 200)
-axs[0].set_ylim(-200, 200)
-axs[1].set_xlim(-200, 200)
-axs[1].set_ylim(-200, 200)
-
-plt.tight_layout()
-plt.show()
-
-# Save the plot
-fig.savefig('ellipse.png')
+    plt.tight_layout()
+    fig.savefig(params + ".png")
+    plt.show()
