@@ -35,14 +35,13 @@ for x_list, y_list, z_list, params in zip(x_lists, y_lists, z_lists, params_list
     # x_list.append(x_list[0])  # close the loop
     # y_list.append(y_list[0])
     # z_list.append(z_list[0])
-    fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+    fig, axs = plt.subplots(1, 3, figsize=(18, 6))
 
     axs[0].scatter(x_list, z_list, color='green')
     axs[0].plot(x_list, z_list, color='grey')
     axs[0].set_title(f"Top view, {params}")
     axs[0].set_xlabel('x')
     axs[0].set_ylabel('z')
-
     axs[0].set_facecolor('black')
     axs[0].grid(False)
     axs[0].spines['bottom'].set_color('grey')
@@ -65,6 +64,20 @@ for x_list, y_list, z_list, params in zip(x_lists, y_lists, z_lists, params_list
     axs[1].spines['right'].set_color('grey')
     axs[1].set_xlim(-200, 200)
     axs[1].set_ylim(-200, 200)
+
+    axs[2].scatter(z_list, y_list, color='green')
+    axs[2].plot(z_list, y_list, color='grey')
+    axs[2].set_title(f"Side view, {params}")
+    axs[2].set_xlabel('z')
+    axs[2].set_ylabel('y')
+    axs[2].set_facecolor('black')
+    axs[2].grid(False)
+    axs[2].spines['bottom'].set_color('grey')
+    axs[2].spines['top'].set_color('grey')
+    axs[2].spines['left'].set_color('grey')
+    axs[2].spines['right'].set_color('grey')
+    axs[2].set_xlim(-200, 200)
+    axs[2].set_ylim(-200, 200)
 
     plt.tight_layout()
     fig.savefig(params + ".png")
