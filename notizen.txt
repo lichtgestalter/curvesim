@@ -6,6 +6,9 @@ next:
     Die Form der Ellipse ist aber wohl korrekt.
     Ich habe keplerian_elements_to_state_vectors() zu keplerian_elements_to_state_vectors_debug() vereinfacht. Hier muss ein Fehler sein!
 
+    Side view in ellipse.py hinzufuegen (x, y, z -> y, z Projektion)
+    Bahn betrachten, die der Startpunkt mit L = 180 Grad fuer verschiedene Ω beschreibt und mit https://orbitalmechanics.info/ vergleichen.
+        Dadurch Idee fuer Formelkorrektur=?
 
 
 
