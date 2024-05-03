@@ -2,13 +2,19 @@ left view (top view when i=90°):   projection (x,y,z) -> (x,z), order = -y (min
 right view (edge view when i=90°): projection (x,y,z) -> (x,y), order =  z       (z-axis points to viewer)
 
 next:
-    Fuer nichttriviale Orbits (z.B. i=90, ϖ=0, aber Ω!=0) liegt die Ellipse anders als in https://orbitalmechanics.info/ (oder auch Geogebra?) !!!
-    Die Form der Ellipse ist aber wohl korrekt.
-    Ich habe keplerian_elements_to_state_vectors() zu keplerian_elements_to_state_vectors_debug() vereinfacht. Hier muss ein Fehler sein!
+    Debugging:
+        Fuer nichttriviale Orbits (z.B. i=90, ϖ=0, aber Ω!=0) liegt die Ellipse anders als in https://orbitalmechanics.info/ (oder auch Geogebra?) !!!
+        Die Form der Ellipse ist aber wohl korrekt.
+        Ich habe keplerian_elements_to_state_vectors() zu keplerian_elements_to_state_vectors_debug() vereinfacht. Hier muss ein Fehler sein!
+        Veraenderungen von ϖ werden sowohl fuer i=90 und i=45 korrekt berechnet.
+        Das einzige Problem ist vermutllich Ω!=0.
+        Alternative Berechnung aus Quelle [f] in keplerian_elements_to_state_vectors_debug_new liefert fuer Ω!=0 genau den gleichen Fehler wie die urspruengliche Berechnung!
 
-    Side view in ellipse.py hinzufuegen (x, y, z -> y, z Projektion)
-    Bahn betrachten, die der Startpunkt mit L = 180 Grad fuer verschiedene Ω beschreibt und mit https://orbitalmechanics.info/ vergleichen.
-        Dadurch Idee fuer Formelkorrektur=?
+
+
+
+        Bahn betrachten, die der Startpunkt mit L = 180 Grad fuer verschiedene Ω beschreibt und mit https://orbitalmechanics.info/ vergleichen.
+            Dadurch Idee fuer Formelkorrektur=?
 
 
 

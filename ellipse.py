@@ -5,9 +5,9 @@ Bereits hier zeigt sich ein Fehler in der Ellipsenlage fuer Ω > 0 Grad.
 Das bedeutet, der Bug wirkt sich bereits auf den Startpunkt aus, also auf die ersten 3 Parameter des State Vector.
 """
 
-import math
-print(math.tan(0.0001 / 2))
-exit(2)
+# import math
+# print(math.tan(0.0001 / 2))
+# exit(2)
 import matplotlib.pyplot as plt
 
 myfile = "debug_file.txt"

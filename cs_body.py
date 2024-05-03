@@ -84,9 +84,7 @@ class CurveSimBody:
 
         ea = CurveSimPhysics.kepler_equation_root(e, ma, ea_guess=ma)  # [d], [e]. Maybe implement alternative version from [f]8-31 and [f]8.10.2???
 
-        nu = 2 * math.atan(math.sqrt((1 + e) / (1 - e)) * math.tan(ea / 2))  # 3b: true anomaly (from eccentric anomaly)
-        r = a * (1 - e * math.cos(ea))  # 4b: radius r
-        h = math.sqrt(mu * a * (1 - e ** 2))  # 5b: specific angular momentum h
+        nu = 0  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! debug debug debug
 
         x_ = a * (math.cos(ea) - e)  # [f]8-32
         y_ = a * math.sqrt(1 - e * e) * math.sin(ea)  # [f]8-32
@@ -94,9 +92,13 @@ class CurveSimBody:
         x = x_ * (math.cos(Ω) * math.cos(ω + nu) - math.sin(Ω) * math.sin(ω + nu) * math.cos(i))    # [f]8-34  maybe replace ω + nu with ω everywhere in [f]8-34?
         x += y_ * (-math.sin(ω + nu) * math.cos(Ω) - math.cos(ω + nu) * math.sin(Ω) * math.cos(i))  # [f]8-34
         y = x_ * (math.sin(Ω) * math.cos(ω + nu) + math.cos(Ω) * math.sin(ω + nu) * math.cos(i))  # [f]8-34
-        y += y_(-math.sin(ω + nu) * math.sin(Ω) + math.cos(ω + nu) * math.cos(Ω) * math.cos(i))  # [f]8-34
+        y += y_ * (-math.sin(ω + nu) * math.sin(Ω) + math.cos(ω + nu) * math.cos(Ω) * math.cos(i))  # [f]8-34
         z = x_ * math.sin(i) * math.sin(ω + nu)  # [f]8-34
         z += y_ * math.cos(ω + nu) * math.sin(i)  # [f]8-34
+
+        nu = 2 * math.atan(math.sqrt((1 + e) / (1 - e)) * math.tan(ea / 2))  # 3b: true anomaly (from eccentric anomaly)
+        r = a * (1 - e * math.cos(ea))  # 4b: radius r
+        h = math.sqrt(mu * a * (1 - e ** 2))  # 5b: specific angular momentum h
 
         p = a * (1 - e ** 2)  # 7b: Semi-latus rectum. Used in velocity calculation.
         dx = (x * h * e / (r * p)) * math.sin(nu) - (h / r) * (math.cos(Ω) * math.sin(ω + nu) + math.sin(Ω) * math.cos(ω + nu) * math.cos(i))  # 7b: velocity component x
