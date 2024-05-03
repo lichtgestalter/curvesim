@@ -62,6 +62,48 @@ class CurveSimBody:
         return f'CurveSimBody: {self.name}'
 
     # noinspection NonAsciiCharacters,PyPep8Naming,PyUnusedLocal
+    def keplerian_elements_to_state_vectors_debug_new(self):
+        """Calculates the state vectors (position and velocity) from Keplerian Orbit Elements.
+        Returns also true anomaly, eccentric anomaly, mean anomaly and the time of periapsis.
+        [a]: https://web.archive.org/web/20160418175843/https://ccar.colorado.edu/asen5070/handouts/cart2kep2002.pdf
+        [b]: https://web.archive.org/web/20170810015111/http://ccar.colorado.edu/asen5070/handouts/kep2cart_2002.doc
+        [c]: https://space.stackexchange.com/questions/19322/converting-orbital-elements-to-cartesian-state-vectors/19335#19335
+        [d]: https://space.stackexchange.com/questions/55356/how-to-find-eccentric-anomaly-by-mean-anomaly
+        [e]: https://github.com/alfonsogonzalez/AWP/blob/main/src/python_tools/numerical_tools.py
+
+        [f]: https://www.researchgate.net/publication/232203657_Orbital_Ephemerides_of_the_Sun_Moon_and_Planets, Section 8.10
+
+        Numbers in comments refer to numbered formulas in [a], [b], [f].
+        Code based on [c]. Added calculation of eccentric anomaly based on the explanations
+        in [d] using a stripped down version of [e]."""
+        a, e, i, Ω, ω, ϖ, L = self.a, self.e, self.i, self.Ω, self.ω, self.ϖ, self.L  # for readability of formulas
+        ma, ea, nu, T, t, mu = self.ma, self.ea, self.nu, self.T, self.t, self.mu  # for readability of formulas
+
+        ω = ϖ - Ω  # [f]8-30
+        ma = L - ϖ  # [f]8-30
+
+        ea = CurveSimPhysics.kepler_equation_root(e, ma, ea_guess=ma)  # [d], [e]. Maybe implement alternative version from [f]8-31 and [f]8.10.2???
+
+        nu = 2 * math.atan(math.sqrt((1 + e) / (1 - e)) * math.tan(ea / 2))  # 3b: true anomaly (from eccentric anomaly)
+        r = a * (1 - e * math.cos(ea))  # 4b: radius r
+        h = math.sqrt(mu * a * (1 - e ** 2))  # 5b: specific angular momentum h
+
+        x_ = a * (math.cos(ea) - e)  # [f]8-32
+        y_ = a * math.sqrt(1 - e * e) * math.sin(ea)  # [f]8-32
+        z_ = 0  # [f]8-32
+        x = x_ * (math.cos(Ω) * math.cos(ω + nu) - math.sin(Ω) * math.sin(ω + nu) * math.cos(i))    # [f]8-34  maybe replace ω + nu with ω everywhere in [f]8-34?
+        x += y_ * (-math.sin(ω + nu) * math.cos(Ω) - math.cos(ω + nu) * math.sin(Ω) * math.cos(i))  # [f]8-34
+        y = x_ * (math.sin(Ω) * math.cos(ω + nu) + math.cos(Ω) * math.sin(ω + nu) * math.cos(i))  # [f]8-34
+        y += y_(-math.sin(ω + nu) * math.sin(Ω) + math.cos(ω + nu) * math.cos(Ω) * math.cos(i))  # [f]8-34
+        z = x_ * math.sin(i) * math.sin(ω + nu)  # [f]8-34
+        z += y_ * math.cos(ω + nu) * math.sin(i)  # [f]8-34
+
+        p = a * (1 - e ** 2)  # 7b: Semi-latus rectum. Used in velocity calculation.
+        dx = (x * h * e / (r * p)) * math.sin(nu) - (h / r) * (math.cos(Ω) * math.sin(ω + nu) + math.sin(Ω) * math.cos(ω + nu) * math.cos(i))  # 7b: velocity component x
+        dy = (y * h * e / (r * p)) * math.sin(nu) - (h / r) * (math.sin(Ω) * math.sin(ω + nu) - math.cos(Ω) * math.cos(ω + nu) * math.cos(i))  # 7b: velocity component y
+        dz = (z * h * e / (r * p)) * math.sin(nu) + (h / r) * (math.cos(ω + nu) * math.sin(i))  # 7b: velocity component z
+        return np.array([x, y, z]), np.array([dx, dy, dz]), nu, ma, ea, T  # state vectors
+
     def keplerian_elements_to_state_vectors_debug(self):
         """Calculates the state vectors (position and velocity) from Keplerian Orbit Elements.
         Returns also true anomaly, eccentric anomaly, mean anomaly and the time of periapsis.
@@ -78,7 +120,6 @@ class CurveSimBody:
 
         ω = ϖ - Ω
         ma = L - ϖ
-        n = math.sqrt(mu / a ** 3)  # 12a: mean angular motion
         ea = CurveSimPhysics.kepler_equation_root(e, ma, ea_guess=ma)
         nu = 2 * math.atan(math.sqrt((1 + e) / (1 - e)) * math.tan(ea / 2))  # 3b: true anomaly (from eccentric anomaly)
         r = a * (1 - e * math.cos(ea))  # 4b: radius r
@@ -157,7 +198,7 @@ class CurveSimBody:
         """Get initial position and velocity of the physical body self."""
         self.mu = CurveSimPhysics.gravitational_parameter(bodies, p.g)  # is the same for all bodies in the system, because they are orbiting a common barycenter
         if self.velocity is None:  # State vectors are not in config file. So they will be calculated from Kepler orbit parameters instead.
-            pos, vel, *_ = self.keplerian_elements_to_state_vectors_debug()
+            pos, vel, *_ = self.keplerian_elements_to_state_vectors_debug_new()
             self.positions[0] = np.array(pos, dtype=float)  # [m] initial position
             self.velocity = np.array(vel, dtype=float)  # [m/s] initial velocity
 
