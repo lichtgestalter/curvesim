@@ -31,6 +31,26 @@ class CurveSimPhysics:
         raise RuntimeError('Newton\'s root solver did not converge.')
 
     @staticmethod
+    def kepler_equation_root_debug(e, ma, ea_guess=0.0, tolerance=1e-10, max_steps=50):
+        """
+        Alternative Method for calculating the root of the Kepler Equation from source
+        [f]: https://www.researchgate.net/publication/232203657_Orbital_Ephemerides_of_the_Sun_Moon_and_Planets, Section 8.10
+        e: eccentricity, ma: mean anomaly [rad], ea_guess: eccentric anomaly [rad]. ea_guess=ma is a good start.
+        """
+        e_deg = math.degrees(e)
+        ma_deg = math.degrees(ma)
+        ea_deg = ma_deg + e_deg * math.sin(ma)
+
+        for n in range(max_steps):
+            delta_ma = ma_deg - (ea_deg - e * math.sin(ea_deg))
+            delta_ea = delta_ma / (1 - e * math.cos(ea_deg))
+            ea_deg += delta_ea
+            if abs(delta_ea) < tolerance:
+                return math.radians(ea_deg)
+        raise RuntimeError('Solution for Kepler\'s Equation did not converge.')
+
+
+    @staticmethod
     def gravitational_parameter(bodies, g):
         """Calculate the gravitational parameter of masses orbiting a common barycenter
         https://en.wikipedia.org/wiki/Standard_gravitational_parameter"""

@@ -63,38 +63,27 @@ class CurveSimBody:
 
     # noinspection NonAsciiCharacters,PyPep8Naming,PyUnusedLocal
     def keplerian_elements_to_state_vectors_debug_new(self):
-        """Calculates the state vectors (position and velocity) from Keplerian Orbit Elements.
-        Returns also true anomaly, eccentric anomaly, mean anomaly and the time of periapsis.
-        [a]: https://web.archive.org/web/20160418175843/https://ccar.colorado.edu/asen5070/handouts/cart2kep2002.pdf
-        [b]: https://web.archive.org/web/20170810015111/http://ccar.colorado.edu/asen5070/handouts/kep2cart_2002.doc
-        [c]: https://space.stackexchange.com/questions/19322/converting-orbital-elements-to-cartesian-state-vectors/19335#19335
-        [d]: https://space.stackexchange.com/questions/55356/how-to-find-eccentric-anomaly-by-mean-anomaly
-        [e]: https://github.com/alfonsogonzalez/AWP/blob/main/src/python_tools/numerical_tools.py
-
+        """
+        Version of keplerian_elements_to_state_vectors() using alternative formulas from source [f] instead of [b] for the initial position.
         [f]: https://www.researchgate.net/publication/232203657_Orbital_Ephemerides_of_the_Sun_Moon_and_Planets, Section 8.10
-
-        Numbers in comments refer to numbered formulas in [a], [b], [f].
-        Code based on [c]. Added calculation of eccentric anomaly based on the explanations
-        in [d] using a stripped down version of [e]."""
+        """
         a, e, i, Ω, ω, ϖ, L = self.a, self.e, self.i, self.Ω, self.ω, self.ϖ, self.L  # for readability of formulas
         ma, ea, nu, T, t, mu = self.ma, self.ea, self.nu, self.T, self.t, self.mu  # for readability of formulas
 
         ω = ϖ - Ω  # [f]8-30
         ma = L - ϖ  # [f]8-30
 
-        ea = CurveSimPhysics.kepler_equation_root(e, ma, ea_guess=ma)  # [d], [e]. Maybe implement alternative version from [f]8-31 and [f]8.10.2???
-
-        nu = 0  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! debug debug debug
+        ea = CurveSimPhysics.kepler_equation_root_debug(e, ma, ea_guess=ma)  # [d], [e]. Maybe implement alternative version from [f]8-31 and [f]8.10.2???
 
         x_ = a * (math.cos(ea) - e)  # [f]8-32
         y_ = a * math.sqrt(1 - e * e) * math.sin(ea)  # [f]8-32
         z_ = 0  # [f]8-32
-        x = x_ * (math.cos(Ω) * math.cos(ω + nu) - math.sin(Ω) * math.sin(ω + nu) * math.cos(i))    # [f]8-34  maybe replace ω + nu with ω everywhere in [f]8-34?
-        x += y_ * (-math.sin(ω + nu) * math.cos(Ω) - math.cos(ω + nu) * math.sin(Ω) * math.cos(i))  # [f]8-34
-        y = x_ * (math.sin(Ω) * math.cos(ω + nu) + math.cos(Ω) * math.sin(ω + nu) * math.cos(i))  # [f]8-34
-        y += y_ * (-math.sin(ω + nu) * math.sin(Ω) + math.cos(ω + nu) * math.cos(Ω) * math.cos(i))  # [f]8-34
-        z = x_ * math.sin(i) * math.sin(ω + nu)  # [f]8-34
-        z += y_ * math.cos(ω + nu) * math.sin(i)  # [f]8-34
+        x = x_ * (math.cos(Ω) * math.cos(ω) - math.sin(Ω) * math.sin(ω) * math.cos(i))    # [f]8-34  maybe replace ω with ω everywhere in [f]8-34?
+        x += y_ * (-math.sin(ω) * math.cos(Ω) - math.cos(ω) * math.sin(Ω) * math.cos(i))  # [f]8-34
+        y = x_ * (math.sin(Ω) * math.cos(ω) + math.cos(Ω) * math.sin(ω) * math.cos(i))  # [f]8-34
+        y += y_ * (-math.sin(ω) * math.sin(Ω) + math.cos(ω) * math.cos(Ω) * math.cos(i))  # [f]8-34
+        z = x_ * math.sin(i) * math.sin(ω)  # [f]8-34
+        z += y_ * math.cos(ω) * math.sin(i)  # [f]8-34
 
         nu = 2 * math.atan(math.sqrt((1 + e) / (1 - e)) * math.tan(ea / 2))  # 3b: true anomaly (from eccentric anomaly)
         r = a * (1 - e * math.cos(ea))  # 4b: radius r
@@ -107,16 +96,10 @@ class CurveSimBody:
         return np.array([x, y, z]), np.array([dx, dy, dz]), nu, ma, ea, T  # state vectors
 
     def keplerian_elements_to_state_vectors_debug(self):
-        """Calculates the state vectors (position and velocity) from Keplerian Orbit Elements.
-        Returns also true anomaly, eccentric anomaly, mean anomaly and the time of periapsis.
-        [a]: https://web.archive.org/web/20160418175843/https://ccar.colorado.edu/asen5070/handouts/cart2kep2002.pdf
-        [b]: https://web.archive.org/web/20170810015111/http://ccar.colorado.edu/asen5070/handouts/kep2cart_2002.doc
-        [c]: https://space.stackexchange.com/questions/19322/converting-orbital-elements-to-cartesian-state-vectors/19335#19335
-        [d]: https://space.stackexchange.com/questions/55356/how-to-find-eccentric-anomaly-by-mean-anomaly
-        [e]: https://github.com/alfonsogonzalez/AWP/blob/main/src/python_tools/numerical_tools.py
-        Numbers in comments refer to numbered formulas in [a] and [b].
-        Code based on [c]. Added calculation of eccentric anomaly based on the explanations
-        in [d] using a stripped down version of [e]."""
+        """
+        Shortened version of keplerian_elements_to_state_vectors()
+        for the case where L, ϖ and Ω are known.
+        """
         a, e, i, Ω, ω, ϖ, L = self.a, self.e, self.i, self.Ω, self.ω, self.ϖ, self.L  # for readability of formulas
         ma, ea, nu, T, t, mu = self.ma, self.ea, self.nu, self.T, self.t, self.mu  # for readability of formulas
 
