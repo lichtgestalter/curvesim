@@ -1,44 +1,43 @@
 import tkinter as tk
-import math
-
 
 class PointViewer(tk.Canvas):
-    def __init__(self, master, points, viewer_start_position, canvas_size, axes_length, position_delta):
+    def __init__(self, master, points, viewer_start_position, canvas_size, axes_length, position_delta, point_radius):
         super().__init__(master, width=canvas_size[0], height=canvas_size[1])
         self.points = points
-        self.viewer_position = list(viewer_start_position)
+        self.viewer_position = viewer_start_position
         self.canvas_size = canvas_size
         self.axes_length = axes_length
         self.position_delta = position_delta
-
-        self.draw_axes()
-        self.draw_points()
-        self.display_viewer_position()
-
+        self.point_radius = point_radius
+        self.canvas_center = [self.canvas_size[0] // 2, self.canvas_size[1] // 2]
+        self.offset = self.canvas_center.copy()   # Used to keep the origin (0, 0, 0) in the middle of the canvas
         self.pack()
         self.create_buttons()
+        self.update_canvas()
 
     def draw_axes(self):
-        # x-axis
-        self.create_line(0, self.canvas_size[1] // 2, self.canvas_size[0], self.canvas_size[1] // 2, fill="black")
-        self.create_text(self.canvas_size[0] - 10, self.canvas_size[1] // 2 - 10, text="x", fill="black")
-
-        # y-axis
-        self.create_line(self.canvas_size[0] // 2, 0, self.canvas_size[0] // 2, self.canvas_size[1], fill="black")
-        self.create_text(self.canvas_size[0] // 2 + 10, 10, text="y", fill="black")
-
-        # z-axis
-        self.create_line(self.canvas_size[0] // 2, self.canvas_size[1], self.canvas_size[0] // 2, 0, fill="black")
-        self.create_text(self.canvas_size[0] // 2 - 10, self.canvas_size[1] - 10, text="z", fill="black")
+        pad = 10
+        origin = self.project_point([0, 0, 0])
+        x_arrow = self.project_point([self.axes_length, 0, 0])
+        y_arrow = self.project_point([0, self.axes_length, 0])
+        z_arrow = self.project_point([0, 0, self.axes_length])
+        self.create_line(origin[0], origin[1], x_arrow[0], x_arrow[1], fill="red")
+        self.create_line(origin[0], origin[1], y_arrow[0], y_arrow[1], fill="green")
+        self.create_line(origin[0], origin[1], z_arrow[0], z_arrow[1], fill="blue")
+        self.create_text(x_arrow[0], x_arrow[1] + pad, text="x", fill="red")
+        self.create_text(y_arrow[0], y_arrow[1] + pad, text="y", fill="green")
+        self.create_text(z_arrow[0], z_arrow[1] + pad, text="z", fill="blue")
 
     def draw_points(self):
         for point in self.points:
-            self.draw_point(point)
+            self.draw_point(point, self.point_radius)
+        coords = [self.project_point(point) for point in self.points]
+        self.create_polygon(coords, fill="", outline="black", tags="points")
 
-    def draw_point(self, point):
+    def draw_point(self, point, radius):
         perspective_point = self.project_point(point)
         x, y = PointViewer.round_screen_coords(perspective_point)
-        self.create_oval(x - 5, y - 5, x + 5, y + 5, fill="green")
+        self.create_oval(x - radius, y - radius, x + radius, y + radius, fill="green")
 
     def project_point(self, point):
         x_diff = point[0] - self.viewer_position[0]
@@ -46,19 +45,21 @@ class PointViewer(tk.Canvas):
         z_diff = point[2] - self.viewer_position[2]
 
         if z_diff == 0:
-            z_diff = 0.0001  # Prevent division by zero error
+            z_diff = 0.01  # Prevent division by zero error
 
         scale_factor = self.axes_length / z_diff
         x_perspective = self.canvas_size[0] // 2 + x_diff * scale_factor
+        x_perspective -= self.offset[0]
         y_perspective = self.canvas_size[1] // 2 - y_diff * scale_factor  # Invert y-axis for tkinter
-        return x_perspective, y_perspective
+        y_perspective -= self.offset[1]
+        return [x_perspective, y_perspective]
 
     @staticmethod
     def round_screen_coords(point):
         return round(point[0]), round(point[1])
 
     def display_viewer_position(self):
-        position_text = f"Pos: {self.viewer_position[0]}, {self.viewer_position[1]}, {self.viewer_position[2]}"
+        position_text = f"Pos: {self.viewer_position[0]}, {self.viewer_position[1]}, {self.viewer_position[2]} Offset: {self.offset[0]:.0f}, {self.offset[1]:.0f}"
         self.create_text(10, 10, text=position_text, anchor="nw")
 
     def create_buttons(self):
@@ -68,8 +69,14 @@ class PointViewer(tk.Canvas):
             button = tk.Button(self.master, text=text, command=command)
             button.pack(side="left")
 
+    def update_offset(self):
+        self.offset = self.project_point([0, 0, 0])
+        self.offset[0] -= self.canvas_center[0]
+        self.offset[1] -= self.canvas_center[1]
+
     def update_canvas(self):
         self.delete("all")
+        self.update_offset()
         self.draw_axes()
         self.draw_points()
         self.display_viewer_position()
@@ -99,7 +106,7 @@ class PointViewer(tk.Canvas):
         self.update_canvas()
 
 
-if __name__ == "__main__":
+def main():
     root = tk.Tk()
     points = [
         (30.00, 0.00, 0.00),
@@ -114,9 +121,14 @@ if __name__ == "__main__":
         (25.51, -14.96, -14.96),
         (28.33, -9.20, -9.20),
     ]
-    viewer_start_position = (100, 100, 1000)
+    viewer_start_position = [100, 100, 1000]
     canvas_size = (600, 600)
     axes_length = 200
     position_delta = 100
-    app = PointViewer(root, points, viewer_start_position, canvas_size, axes_length, position_delta)
+    point_radius = 2
+    app = PointViewer(root, points, viewer_start_position, canvas_size, axes_length, position_delta, point_radius)
     root.mainloop()
+
+
+if __name__ == "__main__":
+    main()
