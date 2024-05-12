@@ -9,11 +9,10 @@ class PointViewer(tk.Canvas):
         self.axes_length = axes_length
         self.position_delta = position_delta
         self.point_radius = point_radius
-        self.canvas_center = [self.canvas_size[0] // 2 + 20, self.canvas_size[1] // 2 - 20]
+        self.canvas_center = [self.canvas_size[0] // 2, self.canvas_size[1] // 2]
         # self.offset = self.canvas_center.copy()   # Used to keep the origin (0, 0, 0) in the middle of the canvas
         self.offset = [0, 0]
-        print(f"Offini: {self.offset[0]:.0f}, {self.offset[1]:.0f}")
-
+        print(f"Canvas center: {self.canvas_center[0]:.0f}, {self.canvas_center[1]:.0f}")
         self.pack()
         self.create_buttons()
         self.update_canvas()
@@ -27,13 +26,15 @@ class PointViewer(tk.Canvas):
 
     def update_offset(self):
         self.origin = self.project_point([0, 0, 0])
-        # self.offset = self.project_point([0, 0, 0])
-        print(f"Origin: {self.origin[0]:.0f}, {self.origin[1]:.0f}")
-        print(f"Offset: {self.offset[0]:.0f}, {self.offset[1]:.0f}")
+        print(f"Origin before update: {self.origin[0]:.0f}, {self.origin[1]:.0f}")
+        print(f"Offset before update: {self.offset[0]:.0f}, {self.offset[1]:.0f}")
         # self.offset[0] -= self.canvas_center[0]
         # self.offset[1] -= self.canvas_center[1]
-        self.offset[0] = self.origin[0] - self.canvas_center[0]
-        self.offset[1] = self.origin[1] - self.canvas_center[1]
+        self.offset[0] += self.origin[0] - self.canvas_center[0]
+        self.offset[1] += self.origin[1] - self.canvas_center[1]
+        self.origin = self.project_point([0, 0, 0])
+        print(f"Origin after update: {self.origin[0]:.0f}, {self.origin[1]:.0f}")
+        print(f"Offset after update: {self.offset[0]:.0f}, {self.offset[1]:.0f}")
 
     def draw_axes(self):
         pad = 10
