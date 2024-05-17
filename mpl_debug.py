@@ -4,7 +4,7 @@ from mpl_toolkits.mplot3d import axes3d
 def set_axs(axs, ax_index, focal_length):
     axs[ax_index].set_proj_type('persp', focal_length=focal_length)
     axs[ax_index].set_title(f" testtitle {ax_index}", fontsize=10)
-    # print camera position
+    axs[ax_index].view_init(elev=10*ax_index, azim=90+30*ax_index)
     print(ax_index)
     print(axs[ax_index].get_position())
     print(axs[ax_index].get_proj())
@@ -43,21 +43,35 @@ if __name__ == "__main__":
     main()
 
 # --------------------
-# In the view_init method, elev controls the elevation angle in the z plane,
-# and azim controls the azimuth angle in the x, y plane. Adjust these values
-# accordingly to set your desired viewpoint and viewing direction.
+# To show the y=0 plane and z=0 plane transparently in each plot, you can
+# use the axvline and axhline functions in Matplotlib. You can set the
+# transparency level using the alpha parameter. Here is an example of how
+# you can add transparent planes to your plots:
+# In this code snippet, the axhline function is used to plot the y=0 plane,
+# and the axvline function is used to plot the z=0 plane. The alpha parameter
+# in these functions controls the transparency level of the planes. You can
+# adjust the alpha value to make the planes more or less transparent.
 # import matplotlib.pyplot as plt
 # from mpl_toolkits.mplot3d import Axes3D
-# import numpy as np
 #
-# fig = plt.figure()
-# ax = fig.add_subplot(111, projection='3d')
+# def set_axs(axs, ax_index, focal_length):
+#     axs[ax_index].set_proj_type('persp', focal_length=focal_length)
+#     axs[ax_index].set_title(f" testtitle {ax_index}", fontsize=10)
 #
-# # Set viewpoint to (-1000, -500, 2000) and direct view towards (0, 0, 0)
-# ax.view_init(elev=10, azim=120)
+#     # Plot transparent y=0 plane
+#     axs[ax_index].axhline(0, color='blue', alpha=0.3)
 #
-# # Plot your 3D data here
-# # For example, plotting a point at (0, 0, 0)
-# ax.scatter(0, 0, 0, color='r')
+#     # Plot transparent z=0 plane
+#     axs[ax_index].axvline(0, color='green', alpha=0.3)
 #
-# plt.show()
+#     print(ax_index)
+#     print(axs[ax_index].get_position())
+#     print(axs[ax_index].get_proj())
+#
+# def main():
+#     fig, axs = plt.subplots(1, 3, subplot_kw={'projection': '3d'})
+#
+#     for i in range(3):
+#         set_axs(axs, i, focal_length=1.0)
+#
+#     plt.show()
