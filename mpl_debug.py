@@ -24,31 +24,40 @@ def plot_planes(axs, alpha=0.3, min_=-200, max_=200):
     axs.add_collection3d(poly_y)
     axs.add_collection3d(poly_z)
 
+def read_points_from_file(filename):
+    with open(filename, encoding='utf-8') as file:
+        lines = file.readlines()
+    x_lists = []
+    y_lists = []
+    z_lists = []
+    params_list = []
+    for line in lines:
+        if line[0] == "a":  # header line
+            params = line.strip()
+            params_list.append(params)
+            x_list = []
+            y_list = []
+            z_list = []
+            x_lists.append(x_list)
+            y_lists.append(y_list)
+            z_lists.append(z_list)
+        elif line[0] == "L":  # point line
+            x, y, z = [float(i) for i in line.strip().split(",")[1:]]  # [1:] because the first value is the Label
+            x_list.append(x)
+            y_list.append(y)
+            z_list.append(z)
+            # print(f"{x=} {y=} {z=} ")
+    return x_lists, y_lists, z_lists, params_list
 
 def main():
     fig, axs = plt.subplots(1, 1, subplot_kw={'projection': '3d'})
-    set_axs(axs, 30, 120, 10)  # define projection and view
-
-    points = [
-        (131.00, 0.00, 0.00),
-        (29.10, 6.76, 6.76),
-        (23.11, 118.42, 118.42),
-        (- 3.53, 37.73, 37.73),
-        (- 106.35, 47.04, 47.04),
-        (- 149.96, -130.32, -30.32),
-        (- 142.39, -34.84, -134.84),
-        (1.57, -35.27, -35.27),
-        (9.43, -30.68, -30.68),
-        (25.51, -14.96, -14.96),
-        (28.33, -9.20, -9.20),
-    ]
-    x, y, z = zip(*points)
-
-    axs.scatter(x, y, z)  # Plot the points
-    axs.plot(x, y, z, color='black')  # connect the points
+    set_axs(axs, 30, 200, 10)  # define projection and view
+    x_lists, y_lists, z_lists, params_list = read_points_from_file("debug_file.txt")
+    axs.scatter(x_lists[0], y_lists[0], z_lists[0])  # Plot the points
+    axs.plot(x_lists[0], y_lists[0], z_lists[0], color='black')  # connect the points
     plot_planes(axs)  # show the x=0, y=0 and z=0 plane as transparent polygons
-
-
+    plt.tight_layout()
+    fig.savefig(params_list[0] + ".png")
     plt.show()
 
 
