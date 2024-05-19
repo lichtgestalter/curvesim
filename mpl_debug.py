@@ -17,12 +17,24 @@ def plot_planes(axs, alpha=0.3, min_=-200, max_=200):
     x0_plane = [(0, miny, minz), (0, miny, maxz), (0, maxy, maxz), (0, maxy, minz)]
     y0_plane = [(minx, 0, minz), (minx, 0, maxz), (maxx, 0, maxz), (maxx, 0, minz)]
     z0_plane = [(minx, miny, 0), (minx, maxy, 0), (maxx, maxy, 0), (maxx, miny, 0)]
-    poly_x = Poly3DCollection([x0_plane], color=colorx, alpha=alpha)
-    poly_y = Poly3DCollection([y0_plane], color=colory, alpha=alpha)
-    poly_z = Poly3DCollection([z0_plane], color=colorz, alpha=alpha)
+    x0_axis = [(minx, -1, -1), (minx, 1, 1), (maxx, 1, 1), (maxx, -1, -1)]
+    y0_axis = [(-1, miny, -1), (1, miny, 1), (1, maxy, 1), (-1, maxy, -1)]
+    z0_axis = [(-1, -1, minz), (1, 1, minz), (1, 1, maxz), (-1, -1, maxz)]
+    poly_x = Poly3DCollection([x0_plane, x0_axis], color=colorx, alpha=alpha)
+    poly_y = Poly3DCollection([y0_plane, y0_axis], color=colory, alpha=alpha)
+    poly_z = Poly3DCollection([z0_plane, z0_axis], color=colorz, alpha=alpha)
     axs.add_collection3d(poly_x)
     axs.add_collection3d(poly_y)
     axs.add_collection3d(poly_z)
+
+    # y0_plane = [(minx, 0, minz), (minx, 0, maxz), (maxx, 0, maxz), (maxx, 0, minz)]
+    # z0_plane = [(minx, miny, 0), (minx, maxy, 0), (maxx, maxy, 0), (maxx, miny, 0)]
+    # poly_x = Poly3DCollection([x0_plane], color=colorx, alpha=alpha)
+    # poly_y = Poly3DCollection([y0_plane], color=colory, alpha=alpha)
+    # poly_z = Poly3DCollection([z0_plane], color=colorz, alpha=alpha)
+    # axs.add_collection3d(poly_x)
+    # axs.add_collection3d(poly_y)
+    # axs.add_collection3d(poly_z)
 
 def read_points_from_file(filename):
     with open(filename, encoding='utf-8') as file:
@@ -55,7 +67,7 @@ def main():
     x_lists, y_lists, z_lists, params_list = read_points_from_file("debug_file.txt")
     axs.scatter(x_lists[0], y_lists[0], z_lists[0])  # Plot the points
     axs.plot(x_lists[0], y_lists[0], z_lists[0], color='black')  # connect the points
-    plot_planes(axs)  # show the x=0, y=0 and z=0 plane as transparent polygons
+    plot_planes(axs, 0.2, -80, 80)  # show the x=0, y=0 and z=0 plane as transparent polygons
     plt.tight_layout()
     fig.savefig(params_list[0] + ".png")
     plt.show()
