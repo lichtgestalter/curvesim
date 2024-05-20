@@ -17,9 +17,9 @@ def plot_planes(axs, alpha=0.3, min_=-200, max_=200):
     x0_plane = [(0, miny, minz), (0, miny, maxz), (0, maxy, maxz), (0, maxy, minz)]
     y0_plane = [(minx, 0, minz), (minx, 0, maxz), (maxx, 0, maxz), (maxx, 0, minz)]
     z0_plane = [(minx, miny, 0), (minx, maxy, 0), (maxx, maxy, 0), (maxx, miny, 0)]
-    x0_axis = [(minx, -1, -1), (minx, 1, 1), (maxx, 1, 1), (maxx, -1, -1)]
-    y0_axis = [(-1, miny, -1), (1, miny, 1), (1, maxy, 1), (-1, maxy, -1)]
-    z0_axis = [(-1, -1, minz), (1, 1, minz), (1, 1, maxz), (-1, -1, maxz)]
+    x0_axis = [(minx, 0, 0), (minx, 0, 0), (maxx, 0, 0), (maxx, 0, 0)]
+    y0_axis = [(0, miny, 0), (0, miny, 0), (0, maxy, 0), (0, maxy, 0)]
+    z0_axis = [(0, 0, minz), (0, 0, minz), (0, 0, maxz), (0, 0, maxz)]
     poly_x = Poly3DCollection([x0_plane, x0_axis], color=colorx, alpha=alpha)
     poly_y = Poly3DCollection([y0_plane, y0_axis], color=colory, alpha=alpha)
     poly_z = Poly3DCollection([z0_plane, z0_axis], color=colorz, alpha=alpha)
