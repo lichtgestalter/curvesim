@@ -27,14 +27,6 @@ def plot_planes(axs, alpha=0.3, min_=-200, max_=200):
     axs.add_collection3d(poly_y)
     axs.add_collection3d(poly_z)
 
-    # y0_plane = [(minx, 0, minz), (minx, 0, maxz), (maxx, 0, maxz), (maxx, 0, minz)]
-    # z0_plane = [(minx, miny, 0), (minx, maxy, 0), (maxx, maxy, 0), (maxx, miny, 0)]
-    # poly_x = Poly3DCollection([x0_plane], color=colorx, alpha=alpha)
-    # poly_y = Poly3DCollection([y0_plane], color=colory, alpha=alpha)
-    # poly_z = Poly3DCollection([z0_plane], color=colorz, alpha=alpha)
-    # axs.add_collection3d(poly_x)
-    # axs.add_collection3d(poly_y)
-    # axs.add_collection3d(poly_z)
 
 def read_points_from_file(filename):
     with open(filename, encoding='utf-8') as file:
@@ -63,7 +55,7 @@ def read_points_from_file(filename):
 
 def main():
     fig, axs = plt.subplots(1, 1, subplot_kw={'projection': '3d'})
-    set_axs(axs, 30, 200, 10)  # define projection and view
+    set_axs(axs, 45, 200, 10)  # define projection and view
     x_lists, y_lists, z_lists, params_list = read_points_from_file("debug_file.txt")
     axs.scatter(x_lists[0], y_lists[0], z_lists[0])  # Plot the points
     axs.plot(x_lists[0], y_lists[0], z_lists[0], color='black')  # connect the points
