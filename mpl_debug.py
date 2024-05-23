@@ -3,10 +3,10 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 def set_axs(axs, elev, azim,focal_length):
     axs.set_proj_type('persp', focal_length=focal_length)
-    axs.set_title(f" testtitle", fontsize=10)
+    axs.set_title(f"{elev=} {azim=}", fontsize=10)
     axs.view_init(elev=elev, azim=azim)
-    print(axs.get_position())
-    print(axs.get_proj())
+    # print(axs.get_position())
+    # print(axs.get_proj())
 
 
 def plot_planes(axs, alpha=0.3, min_=-200, max_=200):
@@ -53,15 +53,23 @@ def read_points_from_file(filename):
             # print(f"{x=} {y=} {z=} ")
     return x_lists, y_lists, z_lists, params_list
 
+
+def plot_points(axs, x_lists, y_lists, z_lists, params_list):
+    for x_list, y_list, z_list, params in zip(x_lists, y_lists, z_lists, params_list):
+        axs.scatter(x_list, y_list, z_list, s=2)  # Plot the points
+        axs.plot(x_list, y_list, z_list, color='black')  # connect the points
+
+
 def main():
+    elev = 25
+    azim = 180
     fig, axs = plt.subplots(1, 1, subplot_kw={'projection': '3d'})
-    set_axs(axs, 45, 200, 10)  # define projection and view
+    set_axs(axs, elev, azim, 10)  # define projection and view
     x_lists, y_lists, z_lists, params_list = read_points_from_file("debug_file.txt")
-    axs.scatter(x_lists[0], y_lists[0], z_lists[0])  # Plot the points
-    axs.plot(x_lists[0], y_lists[0], z_lists[0], color='black')  # connect the points
+    plot_points(axs, x_lists, y_lists, z_lists, params_list)
     plot_planes(axs, 0.2, -80, 80)  # show the x=0, y=0 and z=0 plane as transparent polygons
     plt.tight_layout()
-    fig.savefig(params_list[0] + ".png")
+    fig.savefig(params_list[0] + f" el={elev} az={azim}.png")
     plt.show()
 
 
