@@ -13,7 +13,7 @@ def plot_planes(axs, alpha=0.3, min_=-200, max_=200):
     # show the x=0, y=0 and z=0 plane as transparent polygons
     minx, miny, minz = min_, min_, min_
     maxx, maxy, maxz = max_, max_, max_
-    colorx, colory, colorz = 'red', 'blue', 'green'
+    colorx, colory, colorz = 'red', 'green', 'blue'
     x0_plane = [(0, miny, minz), (0, miny, maxz), (0, maxy, maxz), (0, maxy, minz)]
     y0_plane = [(minx, 0, minz), (minx, 0, maxz), (maxx, 0, maxz), (maxx, 0, minz)]
     z0_plane = [(minx, miny, 0), (minx, maxy, 0), (maxx, maxy, 0), (maxx, miny, 0)]
@@ -61,16 +61,16 @@ def plot_points(axs, x_lists, y_lists, z_lists, params_list):
 
 
 def main():
-    elev = 25
-    azim = 180
-    fig, axs = plt.subplots(1, 1, subplot_kw={'projection': '3d'})
-    set_axs(axs, elev, azim, 10)  # define projection and view
-    x_lists, y_lists, z_lists, params_list = read_points_from_file("debug_file.txt")
-    plot_points(axs, x_lists, y_lists, z_lists, params_list)
-    plot_planes(axs, 0.2, -80, 80)  # show the x=0, y=0 and z=0 plane as transparent polygons
-    plt.tight_layout()
-    fig.savefig(params_list[0] + f" el={elev} az={azim}.png")
-    plt.show()
+    elev = 85
+    for azim in range(0, 360, 10):
+        fig, axs = plt.subplots(1, 1, subplot_kw={'projection': '3d'})
+        set_axs(axs, elev, azim, 10)  # define projection and view
+        x_lists, y_lists, z_lists, params_list = read_points_from_file("debug_file.txt")
+        plot_points(axs, x_lists, y_lists, z_lists, params_list)
+        plot_planes(axs, 0.2, -80, 80)  # show the x=0, y=0 and z=0 plane as transparent polygons
+        plt.tight_layout()
+        fig.savefig(params_list[0] + f" el={elev} az={azim}.png")
+        plt.show()
 
 
 if __name__ == "__main__":
