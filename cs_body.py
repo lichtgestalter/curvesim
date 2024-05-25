@@ -64,8 +64,8 @@ class CurveSimBody:
     # noinspection NonAsciiCharacters,PyPep8Naming,PyUnusedLocal
     def keplerian_elements_to_state_vectors_debug_new_L180(self):
         """
-        Version of keplerian_elements_to_state_vectors() using alternative formulas from source [f] instead of [b] for the initial position.
-        [f]: https://www.researchgate.net/publication/232203657_Orbital_Ephemerides_of_the_Sun_Moon_and_Planets, Section 8.10
+        Version of keplerian_elements_to_state_vectors_debug_new() for L=180 only.
+        Method is neither completed nor used yet.
         """
         a, e, i, Ω, ω, ϖ, L = self.a, self.e, self.i, self.Ω, self.ω, self.ϖ, self.L  # for readability of formulas
         ma, ea, nu, T, t, mu = self.ma, self.ea, self.nu, self.T, self.t, self.mu  # for readability of formulas
