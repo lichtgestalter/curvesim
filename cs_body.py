@@ -4,9 +4,9 @@ import numpy as np
 from cs_physics import CurveSimPhysics
 
 
+# noinspection NonAsciiCharacters,PyPep8Naming,PyUnusedLocal
 class CurveSimBody:
 
-    # noinspection NonAsciiCharacters,PyPep8Naming,PyUnusedLocal
     def __init__(self, p, name, body_type, mass, radius, luminosity, startposition, velocity, a, e, i, Ω, ω, ϖ, L, ma, ea,
                  nu, T, t, beta, color):
         """Initialize instance of physical body."""
@@ -62,6 +62,39 @@ class CurveSimBody:
         return f'CurveSimBody: {self.name}'
 
     # noinspection NonAsciiCharacters,PyPep8Naming,PyUnusedLocal
+    def keplerian_elements_to_state_vectors_debug_new_L180(self):
+        """
+        Version of keplerian_elements_to_state_vectors() using alternative formulas from source [f] instead of [b] for the initial position.
+        [f]: https://www.researchgate.net/publication/232203657_Orbital_Ephemerides_of_the_Sun_Moon_and_Planets, Section 8.10
+        """
+        a, e, i, Ω, ω, ϖ, L = self.a, self.e, self.i, self.Ω, self.ω, self.ϖ, self.L  # for readability of formulas
+        ma, ea, nu, T, t, mu = self.ma, self.ea, self.nu, self.T, self.t, self.mu  # for readability of formulas
+
+        ω = ϖ - Ω  # [f]8-30
+        ma = L - ϖ  # [f]8-30
+
+        ea = CurveSimPhysics.kepler_equation_root_debug(e, ma, ea_guess=ma)  # [d], [e]. Maybe implement alternative version from [f]8-31 and [f]8.10.2???
+
+        x_ = a * (math.cos(ea) - e)  # [f]8-32
+        y_ = a * math.sqrt(1 - e * e) * math.sin(ea)  # [f]8-32
+        z_ = 0  # [f]8-32
+        x = x_ * (math.cos(Ω) * math.cos(ω) - math.sin(Ω) * math.sin(ω) * math.cos(i))    # [f]8-34  maybe replace ω with ω everywhere in [f]8-34?
+        x += y_ * (-math.sin(ω) * math.cos(Ω) - math.cos(ω) * math.sin(Ω) * math.cos(i))  # [f]8-34
+        y = x_ * (math.sin(Ω) * math.cos(ω) + math.cos(Ω) * math.sin(ω) * math.cos(i))  # [f]8-34
+        y += y_ * (-math.sin(ω) * math.sin(Ω) + math.cos(ω) * math.cos(Ω) * math.cos(i))  # [f]8-34
+        z = x_ * math.sin(i) * math.sin(ω)  # [f]8-34
+        z += y_ * math.cos(ω) * math.sin(i)  # [f]8-34
+
+        nu = 2 * math.atan(math.sqrt((1 + e) / (1 - e)) * math.tan(ea / 2))  # 3b: true anomaly (from eccentric anomaly)
+        r = a * (1 - e * math.cos(ea))  # 4b: radius r
+        h = math.sqrt(mu * a * (1 - e ** 2))  # 5b: specific angular momentum h
+
+        p = a * (1 - e ** 2)  # 7b: Semi-latus rectum. Used in velocity calculation.
+        dx = (x * h * e / (r * p)) * math.sin(nu) - (h / r) * (math.cos(Ω) * math.sin(ω + nu) + math.sin(Ω) * math.cos(ω + nu) * math.cos(i))  # 7b: velocity component x
+        dy = (y * h * e / (r * p)) * math.sin(nu) - (h / r) * (math.sin(Ω) * math.sin(ω + nu) - math.cos(Ω) * math.cos(ω + nu) * math.cos(i))  # 7b: velocity component y
+        dz = (z * h * e / (r * p)) * math.sin(nu) + (h / r) * (math.cos(ω + nu) * math.sin(i))  # 7b: velocity component z
+        return np.array([x, y, z]), np.array([dx, dy, dz]), nu, ma, ea, T  # state vectors
+
     def keplerian_elements_to_state_vectors_debug_new(self):
         """
         Version of keplerian_elements_to_state_vectors() using alternative formulas from source [f] instead of [b] for the initial position.
