@@ -15,7 +15,7 @@ right view (edge view when i=90°): projection (x,y,z) -> (x,y), order =  z     
         Schoene Darstellung von Orbits abhaengig von Kepler-Parametern zum vergleichen: https://orbitalmechanics.info/
     next:   Ist die alternative Berechnung bei Variation von ϖ und i bei Ω=0 ebenfalls korrekt?
 
-x
+dummy4githubpush
         Bahn betrachten, die der Startpunkt mit L = 180 Grad fuer verschiedene Ω beschreibt und mit https://orbitalmechanics.info/ vergleichen.
             Dadurch Idee fuer Formelkorrektur=?
 
