@@ -47,12 +47,14 @@ def debug_print_points():
 
 
 def main():
-    # parameters, bodies, lightcurve = curvesim()
-    parameters, bodies = debug_print_points()
+    parameters, bodies, lightcurve = curvesim()
+    # parameters, bodies = debug_print_points()
     print(parameters)
     print(bodies)
     # print(lightcurve)
 
 
 if __name__ == '__main__':
+    print("start")
     main()
+    print("end")
