@@ -120,6 +120,78 @@ class CurveSimBody:
         dz = (z * h * e / (r * p)) * math.sin(nu) + (h / r) * (math.cos(ω + nu) * math.sin(i))  # 7b: velocity component z
         return np.array([x, y, z]), np.array([dx, dy, dz]), nu, ma, ea, T  # state vectors
 
+    def keplerian_elements_to_state_vectors_chatgpt(self):
+        """Calculates the state vectors (position and velocity) from Keplerian Orbit Elements.
+        Returns also true anomaly, eccentric anomaly, mean anomaly and the time of periapsis."""
+        a, e, i, Ω, ω, ϖ, L = self.a, self.e, self.i, self.Ω, self.ω, self.ϖ, self.L  # for readability of formulas
+        ma, ea, nu, T, t, mu = self.ma, self.ea, self.nu, self.T, self.t, self.mu  # for readability of formulas
+
+        # Calculate ω if necessary
+        if ω is None and ϖ is not None and Ω is not None:
+            ω = ϖ - Ω
+
+        # Calculate mean anomaly if necessary
+        if ma is None and L is not None and ϖ is not None:
+            ma = L - ϖ
+
+        # Eccentric anomaly and true anomaly
+        if ea is not None:
+            # Calculate true anomaly from eccentric anomaly
+            nu = 2 * math.atan2(math.sqrt(1 + e) * math.sin(ea / 2), math.sqrt(1 - e) * math.cos(ea / 2))
+            # Calculate mean anomaly from eccentric anomaly
+            ma = ea - e * math.sin(ea)
+        else:
+            if nu is not None:
+                # Calculate eccentric anomaly from true anomaly
+                ea = 2 * math.atan2(math.sqrt(1 - e) * math.sin(nu / 2), math.sqrt(1 + e) * math.cos(nu / 2))
+            elif ma is not None:
+                # Solve for eccentric anomaly using Kepler's equation
+                ea = CurveSimPhysics.kepler_equation_root_chatgpt(e, ma, ea_guess=ma)
+                # Calculate true anomaly from eccentric anomaly
+                nu = 2 * math.atan2(math.sqrt(1 + e) * math.sin(ea / 2), math.sqrt(1 - e) * math.cos(ea / 2))
+            elif T is not None:
+                # Calculate mean motion
+                n = math.sqrt(mu / (a ** 3))
+                # Calculate mean anomaly at time of periapsis
+                ma = n * (t - T)
+                # Solve for eccentric anomaly using Kepler's equation
+                ea = CurveSimPhysics.kepler_equation_root_chatgpt(e, ma, ea_guess=ma)
+                # Calculate true anomaly from eccentric anomaly
+                nu = 2 * math.atan2(math.sqrt(1 + e) * math.sin(ea / 2), math.sqrt(1 - e) * math.cos(ea / 2))
+            else:
+                raise Exception("nu or ma or ea or T has to be provided to keplerian_elements_to_state_vectors()")
+
+        # Calculate mean angular motion
+        n = math.sqrt(mu / (a ** 3))
+
+        # Calculate time of periapsis passage
+        T = t - (ma / n)
+
+        # Position in orbital plane
+        r = a * (1 - e * math.cos(ea))
+        x_orb = r * math.cos(nu)
+        y_orb = r * math.sin(nu)
+
+        # Velocity in orbital plane
+        vx_orb = -math.sqrt(mu / (a * (1 - e ** 2))) * math.sin(ea)
+        vy_orb = math.sqrt(mu / (a * (1 - e ** 2))) * (math.sqrt(1 - e ** 2) * math.cos(ea))
+
+        # Rotation matrices for inclination, ascending node, and argument of periapsis
+        cos_Omega, sin_Omega = math.cos(Ω), math.sin(Ω)
+        cos_omega, sin_omega = math.cos(ω), math.sin(ω)
+        cos_i, sin_i = math.cos(i), math.sin(i)
+
+        # Transformation to 3D space
+        x = (cos_Omega * cos_omega - sin_Omega * sin_omega * cos_i) * x_orb + (-cos_Omega * sin_omega - sin_Omega * cos_omega * cos_i) * y_orb
+        y = (sin_Omega * cos_omega + cos_Omega * sin_omega * cos_i) * x_orb + (-sin_Omega * sin_omega + cos_Omega * cos_omega * cos_i) * y_orb
+        z = (sin_i * sin_omega) * x_orb + (sin_i * cos_omega) * y_orb
+
+        dx = (cos_Omega * cos_omega - sin_Omega * sin_omega * cos_i) * vx_orb + (-cos_Omega * sin_omega - sin_Omega * cos_omega * cos_i) * vy_orb
+        dy = (sin_Omega * cos_omega + cos_Omega * sin_omega * cos_i) * vx_orb + (-sin_Omega * sin_omega + cos_Omega * cos_omega * cos_i) * vy_orb
+        dz = (sin_i * sin_omega) * vx_orb + (sin_i * cos_omega) * vy_orb
+
+        return np.array([x, y, z]), np.array([dx, dy, dz]), nu, ma, ea, T  # state vectors
+
     def keplerian_elements_to_state_vectors(self):
         """Calculates the state vectors (position and velocity) from Keplerian Orbit Elements.
         Returns also true anomaly, eccentric anomaly, mean anomaly and the time of periapsis.
